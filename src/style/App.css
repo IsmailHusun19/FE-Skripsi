@@ -1,0 +1,364 @@
+.container-satu {
+    width: 100%;
+    height: 100vh;
+    /* border: 1px solid red; */
+    font-family: "Roboto", sans-serif;
+    background-color: #fffefe;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+
+/* Navbar */
+
+.container-satu .container-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 75.7px;
+    /* border: 1px solid red; */
+    background-color: #fffefe;
+    width: 100%;
+}
+
+.container-satu .navbar {
+    width: 100%;
+    height: max-content;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* border: 1px solid red; */
+    padding: 20px 20px;
+    background-color: #fffefe;
+    max-width: 1500px;
+}
+
+.container-satu .navbar .logo {
+    width: 200px;
+}
+
+.container-satu .navbar .logo img {
+    width: 200px;
+}
+
+.container-satu .navbar .list ul {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+    margin-left: -50px;
+    /* border: 1px solid red; */
+}
+
+.container-satu .navbar .list ul li a {
+    /* border: 1px solid red; */
+    padding: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.container-satu .navbar .login {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+@media screen and (max-width: 880px) {
+    .container-satu .navbar {
+        width: 100%;
+        padding: 20px;
+    }
+    .container-satu .navbar .list ul {
+        flex-direction: column;
+        position: absolute;
+        right: 0;
+        z-index: 100;
+        background-color: #FFFFFF;
+        width: 50%;
+        height: 100vh;
+        top: 0;
+        justify-content: left;
+        align-items: flex-start;
+        transition: all ease-in-out .5s;
+        transform-origin: right;
+        transform: scaleX(0);
+    }
+
+    .container-satu .navbar .list ul.ulClose {
+        transform: scaleX(1);
+    }
+
+    .container-satu .navbar .list ul li {
+        margin-left: 20px;
+    }
+    .loginActiveResponsive svg {
+        font-size: 25px;
+    }
+
+    .container-satu .navbar .list .barMobile {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 87%;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+    .container-satu .navbar .list ul .barMobile img {
+        width: 200px;
+    }
+
+    .container-satu .navbar .list ul .barMobile li {
+        margin: 0;
+        font-size: 23px;
+    }
+}
+
+@media screen and (max-width: 650px) {
+    .container-satu .navbar .list ul {
+        width: 70%;
+    }
+
+    .container-satu .navbar .list .barMobile {
+        width: 87%;
+        margin: 0 auto;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .container-satu .navbar .list ul {
+        width: 100%;
+        /* border: 1px solid red; */
+    }
+
+    .container-satu .navbar .list .barMobile {
+        width: 87%;
+        margin: 0 auto;
+    }
+}
+
+/* Navbar End */
+
+
+/* Header */
+
+.container-satu .box-landingpage-satu {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 95%;
+    margin: 0 auto;
+    height: calc(100vh - 75.7px);
+}
+
+.container-satu .box-landingpage-satu .box-landingpage-satu-content {
+    /* border: 1px solid red; */
+    width: 50%;
+}
+
+.container-satu .box-landingpage-satu .box-landingpage-satu-gambar {
+    width: 50%;
+    display: flex;
+    justify-content: right;
+}
+
+.container-satu .box-landingpage-satu .box-landingpage-satu-gambar img {
+    width: 80%;
+}
+
+.container-satu .box-landingpage-satu .box-landingpage-satu-content h1 {
+    font-size: 50px;
+    font-weight: bold;
+    font-family: "Secular One", sans-serif;
+}
+
+.container-satu .box-landingpage-satu .box-landingpage-satu-content p {
+    margin-top: 10px;
+    line-height: 30px;
+    font-weight: 400;
+}
+
+.container-satu .box-landingpage-satu .box-landingpage-satu-content button {
+    width: 280px;
+    height: 50px;
+    background: rgb(70,61,226);
+    background: linear-gradient(90deg, rgba(70,61,226,1) 41%, rgba(108,99,255,1) 100%);
+    color: #FFFFFF;
+    font-weight: bold;
+    margin-top: 10px;
+    border-radius: 10px;
+    font-family: "Inknut Antiqua", serif;
+    font-weight: 600;
+    transition: all ease-in-out .25s;
+}
+
+.container-satu .box-landingpage-satu .box-landingpage-satu-content button:hover {
+    box-shadow: 5px 5px 10px #6C63FF;
+}
+
+@media screen and (max-width: 1000px) {
+    .container-satu .box-landingpage-satu {
+        flex-direction: column-reverse;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .container-satu .box-landingpage-satu .box-landingpage-satu-content {
+        width: 100%;
+    }
+    .container-satu .box-landingpage-satu .box-landingpage-satu-gambar {
+        width: 90%;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+@media screen and (max-width: 900px) and (max-height: 980px) {
+    .container-satu .box-landingpage-satu .box-landingpage-satu-gambar {
+        width: 100%;
+    }
+    .container-satu .box-landingpage-satu .box-landingpage-satu-content h1 {
+        font-size: 30px;
+    }
+}
+
+@media screen and (max-width: 800px) and (max-height: 800px) {
+    .container-satu .box-landingpage-satu .box-landingpage-satu-gambar {
+        width: 80%;
+    }
+    .container-satu .box-landingpage-satu .box-landingpage-satu-content h1 {
+        font-size: 30px;
+    }
+}
+
+@media screen and (max-width: 390px) and (max-height: 850px) {
+    .container-satu .box-landingpage-satu .box-landingpage-satu-gambar {
+        width: 80%;
+    }
+    .container-satu .box-landingpage-satu .box-landingpage-satu-content h1 {
+        font-size: 25px;
+    }
+}
+
+/* Header End */
+
+
+/* Content Satu */
+
+.container-satu .gelombangCss {
+    margin-top: -100px;
+}
+
+.container-satu .box-landingpage-dua {
+    width: 95%;
+    margin: 20px auto;
+    height: max-content;
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    color: #FFFFFF;
+    color: #3F3D56;
+}
+
+.container-satu .box-landingpage-dua .box-landingpage-dua-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    gap: 30px;
+    /* background-color: #6C63FF; */
+    padding: 20px 20px;
+    /* height: 00px; */
+    border-radius: 20px;
+}
+
+.container-satu .box-landingpage-dua .box-landingpage-dua-content.reverse {
+    /* background-color: #3F3D56; */
+    flex-direction: unset;
+}
+
+.container-satu .box-landingpage-dua .box-landingpage-dua-content.nonReverse {
+    /* background-color: #2F4F4F; */
+}
+
+.container-satu .box-landingpage-dua .box-landingpage-dua-content p {
+    width: 60%;
+    line-height: 35px;
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+}
+
+.container-satu .box-landingpage-dua .box-landingpage-dua-content img {
+    width: 40%;
+}
+
+@media screen and (max-width: 900px) {
+    .container-satu .box-landingpage-dua .box-landingpage-dua-content, .container-satu .box-landingpage-dua .box-landingpage-dua-content.reverse, .container-satu .box-landingpage-dua .box-landingpage-dua-content.nonReverse {
+        flex-direction: column-reverse;
+        gap: 10px;
+        padding: 25px;
+    }
+
+    .container-satu .box-landingpage-dua .box-landingpage-dua-content p {
+        width: 100%;
+    }
+
+    .container-satu .box-landingpage-dua .box-landingpage-dua-content img {
+        width: 300px;
+    }
+}
+
+/* Content Satu End  */
+
+/* Content Dua */
+.container-satu .box-landingpage-tiga {
+    width: 100%;
+    padding: 0 20px 20px 20px;
+    color: #3F3D56;
+    background-color: rgba(0, 153, 255, 0.2);
+}
+
+.container-satu .box-landingpage-tiga .box-landingpage-tiga-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 50px;
+    margin-top: -.5px;
+}
+
+.container-satu .box-landingpage-tiga .box-landingpage-tiga-content img {
+    width: 40%;
+    border-radius: 20%;
+}
+
+.container-satu .box-landingpage-tiga .box-landingpage-tiga-content h1 {
+    font-size: 23px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.container-satu .box-landingpage-tiga .box-landingpage-tiga-content p {
+    font-size: 16px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 30px;
+}
+
+@media screen and (max-width: 900px) {
+    .container-satu .box-landingpage-tiga .box-landingpage-tiga-content {
+        flex-direction: column;
+    }
+    .container-satu .box-landingpage-tiga .box-landingpage-tiga-content img {
+        width: 70%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .container-satu .box-landingpage-tiga .box-landingpage-tiga-content img {
+        width: 100%;
+    }
+}
+
+
