@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Logo from "../assets/logo.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faX } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
 const menuNavigasi = [
   { name: "Home", link: "/" },
@@ -68,7 +69,7 @@ const Navbar = () => {
             ))}
             {isResponsive ? (
               <li>
-                <a href="/login">Login</a>
+                <Link to="/login">Login</Link>
               </li>
             ) : (
               ""
