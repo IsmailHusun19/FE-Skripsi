@@ -1,6 +1,10 @@
+* {
+    scroll-behavior: smooth;
+}
+
 .container-satu {
     width: 100%;
-    height: 100vh;
+    height: max-content !important;
     /* border: 1px solid red; */
     font-family: "Roboto", sans-serif;
     background-color: #fffefe;
@@ -140,13 +144,23 @@
 
 /* Header */
 
+.container-satu .container-box-landingpage-satu {
+    background: #ffffff88 url(../assets/bg.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: overlay;
+}
+
 .container-satu .box-landingpage-satu {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 95%;
     margin: 0 auto;
-    height: calc(100vh + 75.7px);
+    padding-top: 75.7px;
+    height: 100vh;
+    max-height: 1000px;
     max-width: 1500px;
 }
 
@@ -268,16 +282,6 @@
     /* height: 00px; */
     border-radius: 20px;
 }
-
-.container-satu .box-landingpage-dua .box-landingpage-dua-content.reverse {
-    /* background-color: #3F3D56; */
-    flex-direction: unset;
-}
-
-.container-satu .box-landingpage-dua .box-landingpage-dua-content.nonReverse {
-    /* background-color: #2F4F4F; */
-}
-
 .container-satu .box-landingpage-dua .box-landingpage-dua-content p {
     width: 60%;
     line-height: 35px;
@@ -485,6 +489,34 @@
         width: 100%;
     }
 }
+
+/* Footer End */
+
+
+
+
+
+/* MataKuliah */
+
+/* Header */
+
+.container-satu .container-matkul {
+    width: 100%;
+    height: max-content;
+    padding-bottom: 80px;
+    background: #ffffff64 url(../assets/hero-bg-abstract.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: overlay;
+}
+
+
+
+
+/* Header End */
+
+/* Matakuliah End */
 
 
 

@@ -2,12 +2,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import LogoSignup from "../assets/LogoDaftar.svg";
+import axios from 'axios';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { Report } from 'notiflix/build/notiflix-report-aio';
+
 
 const Signup = () => {
   const navigate = useNavigate();
   const [getDataAkun, setDataAkun] = useState({
+    name: "",
+    npm: "",
     email: "",
     password: "",
+    role: "Mahasiswa",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -22,6 +29,33 @@ const Signup = () => {
       [name]: value,
     });
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Mencegah reload halaman
+  
+    try {
+      const response = await axios.post('http://localhost:3000/register', {
+        nomorinduk: getDataAkun.npm,  
+        nama: getDataAkun.name,
+        email: getDataAkun.email,
+        password: getDataAkun.password,
+        role: getDataAkun.role,
+      });
+      Notify.success('Berhasil mendaftar');
+      navigate('/login');
+    } catch (error) {
+      Report.failure(
+        'Email atau NPM sudah terdaftar!',
+        '',
+        'Okay',
+        {
+          backOverlay: false,
+        }
+      );
+    }
+  };
+  
+
 
   return (
     <>
@@ -47,7 +81,7 @@ const Signup = () => {
                 </h2>
               </div>
               <div className="mt-3 w-full sm:max-w-sm">
-                <form action="#" method="POST">
+                <form action="#" method="POST" onSubmit={handleSubmit}>
                 <div>
                     <label
                       htmlFor="name"
