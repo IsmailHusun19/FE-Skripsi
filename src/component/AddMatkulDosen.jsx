@@ -10,14 +10,6 @@ const AddMatkulDosen = ({ handleButtonClick, handleDataUsersCheck, editDataMatku
   const [selectedDateAkhir, setSelectedDateAkhir] = useState("");
   const [name, setName] = useState("");
 
-  useEffect(() => {
-    if(Object.keys(editDataMatkul).length > 0){
-      setName(editDataMatkul.nama);
-      setSelectedDateAwal(new Date(editDataMatkul.tanggalMulai).toISOString().split("T")[0]);
-      setSelectedDateAkhir(new Date(editDataMatkul.tanggalAkhir).toISOString().split("T")[0]);
-    }
-  },[editDataMatkul])
-
 
   const handleDateChangeAwal = (event) => {
     const date = event.target.value;
@@ -32,22 +24,42 @@ const AddMatkulDosen = ({ handleButtonClick, handleDataUsersCheck, editDataMatku
     setName(event.target.value);
   };
 
+  useEffect(() => {
+    if (Object.keys(editDataMatkul).length > 0) {
+      setName(editDataMatkul.nama);
+      setSelectedDateAwal(new Date(editDataMatkul.tanggalMulai).toISOString().split("T")[0]);
+      setSelectedDateAkhir(new Date(editDataMatkul.tanggalAkhir).toISOString().split("T")[0]);
+    } else {
+      resetForm();
+    }
+  }, [editDataMatkul]);
+
+  const resetForm = () => {
+    setName("");
+    setSelectedDateAwal("");
+    setSelectedDateAkhir("");
+  };
+
   const handleSubmitDosen = async (e) => {
     e.preventDefault();
     const formattedDateAwal = `${selectedDateAwal}T00:00:00Z`;
     const formattedDateAkhir = `${selectedDateAkhir}T00:00:00Z`;
-  
+    const url = editDataMatkul.id ? `mata-kuliah/${editDataMatkul.id}` : 'mata-kuliah';
+
     try {
-      const response = await axios.post('http://localhost:3000/mata-kuliah', {
-        nama: name,  
-        tanggalMulai: formattedDateAwal,
-        tanggalAkhir: formattedDateAkhir,
-      },{
+      await axios({
+        method: editDataMatkul.id ? 'put' : 'post',
+        url: `http://localhost:3000/${url}`,
+        data: {
+          nama: name,
+          tanggalMulai: formattedDateAwal,
+          tanggalAkhir: formattedDateAkhir,
+        },
         withCredentials: true,
       });
       await updateDataMatkul();
       handleButtonClick();
-      Notify.success('Berhasil menambah mata kuliah');
+      Notify.success(editDataMatkul.id ? 'Berhasil mengedit mata kuliah' : 'Berhasil menambah mata kuliah');
     } catch (error) {
       Report.failure(
         'Lengkapi data dengan benar!',
@@ -58,7 +70,10 @@ const AddMatkulDosen = ({ handleButtonClick, handleDataUsersCheck, editDataMatku
         }
       );
     }
+    resetForm();
+    editDataMatkul = {};
   };
+  
 
   const handleSubmitMahasiswa = async (e) => {
     e.preventDefault();
@@ -123,7 +138,7 @@ const AddMatkulDosen = ({ handleButtonClick, handleDataUsersCheck, editDataMatku
         <div className="flex h-screen items-end mt-[40px] justify-center p-4 text-center sm:items-center sm:p-0">
           <DialogPanel
             transition
-            className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+            className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full mb-14  sm:my-8 sm:w-full sm:max-w-lg"
           >
             <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <h1 className="font-semibold mb-4">Tambah Mata Kuliah</h1>
@@ -214,7 +229,7 @@ const AddMatkulDosen = ({ handleButtonClick, handleDataUsersCheck, editDataMatku
                   <div className="flex mt-7 space-x-4">
                     <button
                       type="submit"
-                      onClick={editDataMatkul ? handleEditMatkul : handleSubmitDosen}
+                      onClick={handleSubmitDosen}
                       className="block min-w-max rounded-md bg-indigo-600 px-8 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
                     >
                       Simpan

@@ -99,7 +99,7 @@ const Profile = () => {
       <Navbar key={navbarKey} />
       <UserCheck setData={handleUserData} />
       <section className="bg-white dark:bg-gray-900 pt-[75.7px] flex justify-center items-center">
-        <div className="w-[70%] bg-gray-50 my-10 px-4 py-10 mx-auto shadow-inner rounded-lg">
+        <div className="w-[90%] bg-gray-50 my-10 px-4 py-10 mx-auto shadow-inner rounded-lg md:w-[80%] lg:w-[70%]">
           <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
             My Profile
           </h2>

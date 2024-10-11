@@ -40,7 +40,7 @@ const Navbar = () => {
     setLoading(false); // Set loading ke false setelah memeriksa localStorage
 
     // Media query untuk memeriksa apakah lebar layar 880px atau kurang
-    const mediaQuery = window.matchMedia("(max-width: 880px)");
+    const mediaQuery = window.matchMedia("(max-width: 980px)");
     const handleMediaQueryChange = (e) => {
       setIsResponsive(e.matches);
     };
@@ -71,6 +71,10 @@ const Navbar = () => {
       localStorage.setItem("status", false);
     }
   };
+
+  useEffect(() => {
+    loading ? Loading.standard() : Loading.remove();
+  },[loading])
 
   const handleLogout = async () => {
     try {
@@ -135,7 +139,9 @@ const Navbar = () => {
                   <Link onClick={handleLogout}>Logout</Link>
                 </li>
               ) : (
+                <li className="flex flex-col gap-[50px]">
                 <Link to="/login">Login</Link>
+              </li>
               ))}
           </ul>
         </div>
@@ -157,7 +163,7 @@ const Navbar = () => {
                     className="w-7 h-7 mr-3 rounded-full shrink-0"
                     alt="Profile"
                   />
-                  {userData.nama}
+                  <h1 className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[10ch] lg:max-w-max">{userData.nama}</h1>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="w-3 fill-gray-400 inline ml-3"
