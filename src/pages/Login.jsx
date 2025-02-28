@@ -5,10 +5,12 @@ import { useState } from "react";
 import LogoLogin from "../assets/LogoLogin.svg";
 import Notiflix from 'notiflix';
 import { Report } from 'notiflix/build/notiflix-report-aio';
+import { Loading } from "notiflix/build/notiflix-loading-aio";
   
 
 const Login = () => {
   const navigate = useNavigate();
+  Loading.remove()
   const [getDataAkun, setDataAkun] = useState({
     email: "",
     password: "",

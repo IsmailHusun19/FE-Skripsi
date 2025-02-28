@@ -7,6 +7,8 @@ import Signup from './pages/Signup'
 import Matkul from './pages/Matkul';
 import Materi from './pages/Materi';
 import Profile from './component/Profile';
+import EditorConfig from './component/EditorConfig';
+import MengelolaMateri from './pages/MengelolaMateri';
 import Notiflix from 'notiflix';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { Report } from 'notiflix/build/notiflix-report-aio';
@@ -15,6 +17,7 @@ import { Loading } from 'notiflix/build/notiflix-loading-aio';
 import { Block } from 'notiflix/build/notiflix-block-aio';
 
 import './style/App.css'
+import TambahMateri from './pages/TambahMateri';
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
           <Route path='/matakuliah' element={<Matkul/>}/>
           <Route path='/materi' element={<Materi/>}/>
           <Route path='/profile' element={<Profile/>}/>
+          <Route path='/mengelolamateri' element={<MengelolaMateri/>}/>
+          <Route path='/tambahmateri' element={<TambahMateri/>}/>
+
         </Routes>
       </Router>
     </>

@@ -1,6 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
+
+*{
+	box-sizing: border-box;
+}
+@media print {
+	body {
+		margin: 0 !important;
+	}
+}
+
 .main-container {
 	font-family: 'Lato';
 	width: fit-content;
@@ -14,11 +24,6 @@
 	line-height: 1.6;
 	word-break: break-word;
     padding: 20px !important;
-}
-
-.editor-container_classic-editor .editor-container__editor {
-    width: 95%;
-    margin: 0 auto;
 }
 
 .ck-content h3.category {
@@ -156,15 +161,13 @@
 
 figure.image {
 	margin-bottom: 30px;
-    max-width: 800px;
-    width: 100%;
+	width: 800px;
 	height: auto;
 	max-height: fit-content;
 }
 
 figure.image img {
-    max-width: 800px;
-    width: 100%;
+	width: 800px;
 	height: auto;
 	max-height: fit-content;
 	border-radius: 2%;
