@@ -213,30 +213,6 @@ const Matkul = () => {
                   />
                   <h1 className="font-semibold text-sm">{matkul.namaMataKuliah}</h1>
                   <p>{handleDataUsersCheck.role === "Mahasiswa" ? matkul.namaDosen : ""}</p>
-                  <div className="absolute top-2 right-3 flex justify-center gap-3">
-                    <FontAwesomeIcon
-                      className="p-1 text-xl text-sky-500 hover:text-red-400"
-                      onClick={async () => {
-                        if (handleDataUsersCheck.role === "Mahasiswa") {
-                          await deleteDataMatkulMahasiswa(matkul.id);
-                        } else {
-                          await deleteDataMatkul(matkul.id);
-                        }
-                      }}
-                      icon={faTrash}
-                    />
-                    <FontAwesomeIcon
-                      className={
-                        handleDataUsersCheck.role === "Mahasiswa"
-                          ? "hidden"
-                          : "p-1 text-xl text-sky-500 hover:text-yellow-400"
-                      }
-                      onClick={async () => {
-                        await editDataMatkul(matkul);
-                      }}
-                      icon={faPencil}
-                    />
-                  </div>
                 </Link>
               </div>
             ))
