@@ -17,8 +17,6 @@ const AddMatkulDosen = ({
     setName(event.target.value);
   };
 
-  console.log(editDataMatkul);
-
   useEffect(() => {
     if (Object.keys(editDataMatkul).length > 0) {
       setName(editDataMatkul.namaMataKuliah);
@@ -83,6 +81,7 @@ const AddMatkulDosen = ({
       });
     }
   };
+
 
   return (
     <Dialog open={open} onClose={() => setOpen(true)} className="relative z-10">

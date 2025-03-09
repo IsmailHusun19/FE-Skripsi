@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const UserCheck = ({ setData }) => {
+  const navigate = useNavigate()
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   const fetchProtectedData = async () => {
     try {
-      // Fetching the main data
       const response = await axios.get("http://localhost:3000/", {
         withCredentials: true,
       });
@@ -21,8 +22,11 @@ const UserCheck = ({ setData }) => {
 
       // Update state
       setIsAuthenticated(responseId.data);
+      localStorage.setItem("status", true);
     } catch (error) {
       console.error("Error fetching protected data:", error);
+      localStorage.setItem("status", false);
+      navigate('/')
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
         setData(null);
       }
@@ -30,18 +34,16 @@ const UserCheck = ({ setData }) => {
   };
 
   useEffect(() => {
-    // Fetch data only on component mount
     fetchProtectedData();
   }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
-      // Set data when isAuthenticated has updated
       setData(isAuthenticated);
     }
   }, [isAuthenticated, setData]);
 
-  return null; // Since there's no UI to render
+  return null;
 };
 
 export default UserCheck;

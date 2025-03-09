@@ -27,14 +27,12 @@ const Navbar = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Memeriksa apakah ada data pengguna di localStorage
     const storedUserData = JSON.parse(localStorage.getItem("status"));
     if (storedUserData) {
       setUserData(storedUserData);
     }
-    setLoading(false); // Set loading ke false setelah memeriksa localStorage
+    setLoading(false);
 
-    // Media query untuk memeriksa apakah lebar layar 880px atau kurang
     const mediaQuery = window.matchMedia("(max-width: 980px)");
     const handleMediaQueryChange = (e) => {
       setIsResponsive(e.matches);
@@ -74,14 +72,12 @@ const Navbar = () => {
         "http://localhost:3000/logout",
         {},
         {
-          withCredentials: true, // Mengirim cookie dengan request
+          withCredentials: true,
         }
       );
 
       if (response.status === 200) {
-        console.log(response.data.message); // 'Logout successful'
-
-        // Redirect pengguna ke halaman login atau homepage setelah logout
+        console.log(response.data.message);
         window.location.href = "/";
       }
     } catch (error) {

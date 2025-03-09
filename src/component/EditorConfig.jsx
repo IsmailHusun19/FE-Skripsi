@@ -86,28 +86,88 @@ import {
 
 import "ckeditor5/ckeditor5.css";
 
-export default function EditorConfig({setDataEditorView}) {
+export default function EditorConfig({setDataEditorView, dataEditor, dataIdSubMateri}) {
   const LICENSE_KEY = 'GPL';
   const editorContainerRef = useRef(null);
   const editorRef = useRef(null);
   const [isLayoutReady, setIsLayoutReady] = useState(false);
-  const [dataEditor, setDataEditor] = useState("");
-  const [dataEdiorView, setDataEdiorView] = useState("");
+  const [dataEditorView, setDataEdiorView] = useState("");
+  const [uploadedImages, setUploadedImages] = useState([]);
 
   useEffect(() => {
-    setDataEditorView(dataEdiorView);
-  }, [dataEdiorView, setDataEditorView]);
+    setDataEditorView(dataEditorView);
+  }, [dataEditorView, setDataEditorView]);
 
   useEffect(() => {
     setIsLayoutReady(true);
-
     return () => setIsLayoutReady(false);
   }, []);
 
+  useEffect(() => {
+    if (dataIdSubMateri !== "") {
+      // Jika subMateriId sudah ada, update semua gambar dalam array
+      uploadedImages.forEach((imageId) => {
+        fetch(`http://localhost:3000/gambar-materi/${imageId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subMateriId: dataIdSubMateri}),
+          credentials: "include",
+        })
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            console.log(`Gambar ${imageId} berhasil diperbarui`);
+          } else {
+            console.error(`Gagal update gambar ${imageId}:`, result.error);
+          }
+        })
+        .catch(error => console.error(`Gagal update gambar ${imageId}:`, error));
+      });
+      setUploadedImages([]);
+    }
+  }, [dataIdSubMateri]);
+  console.log(dataIdSubMateri)
+
+  class MyUploadAdapter {
+    constructor(loader) {
+      this.loader = loader;
+    }
+
+    upload() {
+      return this.loader.file
+        .then(file => new Promise((resolve, reject) => {
+          const data = new FormData();
+          data.append("upload", file);
+
+          fetch("http://localhost:3000/gambar-materi", {
+            method: "POST",
+            body: data,
+            credentials: "include",
+          })
+          .then(response => response.json())
+          .then(result => {
+            if (result.success) {
+              setUploadedImages(prev => [...prev, result.data.id]); // Simpan ID gambar ke array
+              resolve({ default: result.data.url });
+            } else {
+              reject(result.error);
+            }
+          })
+          .catch(error => reject(error));
+        }));
+    }
+
+    abort() {}
+  }
+
+  function MyCustomUploadAdapterPlugin(editor) {
+    editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
+      return new MyUploadAdapter(loader);
+    };
+  }
+
   const editorConfig = {
-    simpleUpload: {
-      uploadUrl: "http://localhost:5000/api/ujicobaku",
-    },
+    extraPlugins: [MyCustomUploadAdapterPlugin],
     toolbar: {
       items: [
         "undo",
@@ -304,7 +364,7 @@ export default function EditorConfig({setDataEditorView}) {
         "resizeImage",
       ],
     },
-    initialData: "",
+    initialData: dataEditor,
     licenseKey: LICENSE_KEY,
     link: {
       addTargetToExternalLinks: true,
@@ -398,10 +458,41 @@ export default function EditorConfig({setDataEditorView}) {
     },
   };
 
+  useEffect(() => {
+  }, [dataEditorView]);
+
   const handleEditorChange = (event, editor) => {
-    const dataEditor = editor.getData();
-    setDataEdiorView(dataEditor);
+    const newData = editor.getData();
+  
+    // Parsing HTML menggunakan DOMParser
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(newData, "text/html");
+    
+    // Ambil semua gambar yang ada dalam editor saat ini
+    const currentImages = Array.from(doc.querySelectorAll("img")).map(img => img.getAttribute("src"));
+  
+    // Parsing ulang data sebelumnya untuk mendapatkan gambar sebelum perubahan
+    const oldDoc = parser.parseFromString(dataEditorView, "text/html");
+    const previousImages = Array.from(oldDoc.querySelectorAll("img")).map(img => img.getAttribute("src"));
+  
+    // Cari gambar yang dihapus dari editor
+    const deletedImages = previousImages.filter(url => !currentImages.includes(url));
+  
+    // Kirim permintaan untuk menghapus gambar di backend jika ada yang dihapus
+    deletedImages.forEach(url => {
+      fetch("http://localhost:3000/gambar-materi", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+        credentials: "include",
+      })
+      .then(response => response.json())
+      .then(result => console.log("✅ Gambar dihapus:", result))
+      .catch(error => console.error("❌ Gagal menghapus gambar:", error));
+    });
+    setDataEdiorView(newData);
   };
+  
 
   return (
     <div>
