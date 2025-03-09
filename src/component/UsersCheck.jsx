@@ -24,7 +24,7 @@ const UserCheck = ({ setData }) => {
     } catch (error) {
       console.error("Error fetching protected data:", error);
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-        setData(null); // Set to null instead of empty string
+        setData(null);
       }
     }
   };

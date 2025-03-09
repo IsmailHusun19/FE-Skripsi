@@ -26,6 +26,7 @@ const Matkul = () => {
       const response = await axios.get("http://localhost:3000/matakuliah", {
         withCredentials: true,
       });
+      console.log(response)
       if (response.status === 200) {
         const data = await response.data;
         const mataKuliah =
@@ -109,13 +110,14 @@ const Matkul = () => {
     const data = await matkul;
     setDataMatkulEdit(data);
     setShowAddMatkulDosen(true);
+    console.log(matkul)
   };
 
   useEffect(() => {}, [getDataMatkulEdit]);
 
   useEffect(() => {
     if (Object.keys(handleDataUsersCheck).length > 0) {
-      getData(); // Mendapatkan data awal saat komponen pertama kali dirender
+      getData();
     }
   }, [handleDataUsersCheck]);
 
@@ -135,6 +137,8 @@ const Matkul = () => {
   useEffect(() => {
     setHandleAddMatkul(Object.keys(handleDataUsersCheck).length > 0);
   }, [handleDataUsersCheck]);
+
+  console.log(getDataMatkul)
 
   return (
     <div className="container-satu overflow-x-hidden">
@@ -190,7 +194,7 @@ const Matkul = () => {
           </div>
         </div>
         <div className="content-matkul w-[90%] m-auto md:w-[95%] grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
-          {getDataMatkul.length === 0 ? (
+          {getDataMatkul.length === 0 && !loading ? (
             <h1 className="absolute flex-col gap-6 top-72 inset-0 flex items-center justify-center text-lg text-slate-500 font-semibold text-center">
               <FontAwesomeIcon className="text-5xl text-slate-500 sm:text-9xl" icon={faFaceSadTear} />
               Mata Kuliah Kosong
@@ -199,7 +203,7 @@ const Matkul = () => {
             getDataMatkul.map((matkul) => (
               <div key={matkul.id} className="flex flex-col items-center">
                 <Link
-                  to=""
+                  to="/materi"
                   className="shadow-xl relative cursor-pointer transition-all hover:scale-105 hover:text-sky-500 w-[100%] flex items-center flex-col gap-2 bg-white p-4 rounded-lg"
                 >
                   <img
@@ -207,7 +211,8 @@ const Matkul = () => {
                     src={MatkulImage}
                     alt={matkul.nama}
                   />
-                  <h1 className="font-semibold text-sm">{matkul.nama}</h1>
+                  <h1 className="font-semibold text-sm">{matkul.namaMataKuliah}</h1>
+                  <p>{handleDataUsersCheck.role === "Mahasiswa" ? matkul.namaDosen : ""}</p>
                   <div className="absolute top-2 right-3 flex justify-center gap-3">
                     <FontAwesomeIcon
                       className="p-1 text-xl text-sky-500 hover:text-red-400"

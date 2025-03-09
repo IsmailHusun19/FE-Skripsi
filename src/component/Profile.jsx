@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import UserCheck from "./UsersCheck";
 import axios from "axios";
 import { Report } from 'notiflix/build/notiflix-report-aio';
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
-  const [navbarKey, setNavbarKey] = useState(0); // State untuk memicu rerender Navbar
+  const [navbarKey, setNavbarKey] = useState(0);
   const [formData, setFormData] = useState({
     nama: "",
     email: "",
@@ -17,17 +19,20 @@ const Profile = () => {
   });
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Fungsi untuk menangani data dari UserCheck
-  const handleUserData = (data) => {
-    if (data.id !== userData?.id) {
-      setUserData(data);
-      setFormData({
-        nama: data.nama || "",
-        email: data.email || "",
-        newNomorInduk: data.nomorinduk || "",
-        password: "",
-      });
-    }
+
+  const handleUserData = async (data) => {
+      const dataUsers = await data;
+      if(dataUsers){
+        setUserData(dataUsers);
+        setFormData({
+          nama: dataUsers.nama || "",
+          email: dataUsers.email || "",
+          newNomorInduk: dataUsers.nomorinduk || "",
+          password: "",
+        });
+      }else {
+        navigate('/login')
+      }
   };
 
   // Handle perubahan input form

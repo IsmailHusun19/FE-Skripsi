@@ -10,18 +10,13 @@ import {
 import { Link } from "react-router-dom";
 import UserCheck from "./UsersCheck";
 import axios from "axios";
-import Notiflix from 'notiflix';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import { Report } from 'notiflix/build/notiflix-report-aio';
-import { Confirm } from 'notiflix/build/notiflix-confirm-aio';
 import { Loading } from 'notiflix/build/notiflix-loading-aio';
-import { Block } from 'notiflix/build/notiflix-block-aio';
 
 const menuNavigasi = [
   { name: "Home", link: "/" },
   { name: "Mata Kuliah", link: "/matakuliah" },
   { name: "Tentang Kami", link: "/services" },
-  { name: "Contact", link: "/contact" }, // Perbaiki link
+  { name: "Contact", link: "/editor" }, // Perbaiki link
 ];
 
 
@@ -44,12 +39,8 @@ const Navbar = () => {
     const handleMediaQueryChange = (e) => {
       setIsResponsive(e.matches);
     };
-
-    // Set initial state dan tambahkan event listener
     handleMediaQueryChange(mediaQuery);
     mediaQuery.addEventListener("change", handleMediaQueryChange);
-
-    // Cleanup event listener saat komponen unmount
     return () => {
       mediaQuery.removeEventListener("change", handleMediaQueryChange);
     };
