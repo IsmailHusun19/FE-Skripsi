@@ -161,14 +161,20 @@
 
 figure.image {
 	margin-bottom: 30px;
-	width: 800px;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
 	height: auto;
 	max-height: fit-content;
 }
 
 figure.image img {
-	width: 800px;
+	width: 100%;
+	max-width: 800px;
 	height: auto;
+	object-fit: cover;
 	max-height: fit-content;
 	border-radius: 2%;
 }
@@ -184,13 +190,25 @@ figure.image figcaption {
 
 }
 
-.ck-content h1 {
-	font-size: 20px;
-	font-weight: bold;
+.editor-container__editor h1 {
+	font-size: 17px;
+	font-weight: bolder;
+	padding-bottom: 5px;
 }
 
-.editor-container__editor h1 {
+.editor-container__editor h1.judul {
 	font-size: 30px;
 	font-weight: bolder;
 	padding-bottom: 5px;
+}
+
+.editor-container__editor p {
+	font-size: 17px;
+	line-height: 2rem;
+	font-family: "Open Sans", sans-serif;
+	background-color: transparent !important;
+	font-weight: 400 !important;
+	letter-spacing: 0.0666px;
+	color: #272822 !important;
+	font-size: 18px;
 }

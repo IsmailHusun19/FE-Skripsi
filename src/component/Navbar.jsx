@@ -16,7 +16,7 @@ const menuNavigasi = [
   { name: "Home", link: "/" },
   { name: "Mata Kuliah", link: "/matakuliah" },
   { name: "Tentang Kami", link: "/services" },
-  { name: "Contact", link: "/editor" }, // Perbaiki link
+  { name: "Contact", link: "/editor" },
 ];
 
 

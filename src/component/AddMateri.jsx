@@ -3,8 +3,6 @@ import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import axios from "axios";
 import { Notify } from "notiflix/build/notiflix-notify-aio";
 import { Report } from "notiflix/build/notiflix-report-aio";
-import { id } from "date-fns/locale";
-import { data } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 const AddMatkulDosen = ({
@@ -14,6 +12,7 @@ const AddMatkulDosen = ({
   handleEditMateri,
   dataMateri,
   editDataMateri,
+  idMataKuliah,
 }) => {
   const [open, setOpen] = useState(true);
   const [name, setName] = useState("");
@@ -37,7 +36,7 @@ const AddMatkulDosen = ({
     e.preventDefault();
     let setUrl = '';
     let data = {
-      mataKuliahId : 1,
+      mataKuliahId : parseInt(idMataKuliah),
       judul: name,
     }
     let metode = '';
@@ -50,11 +49,15 @@ const AddMatkulDosen = ({
       setUrl = 'http://localhost:3000/materi';
     }
     const dataJudul = dataMateri.some(items => items.judul === name)
-    console.log(dataJudul)
     if(dataJudul && name.trim() !== "")  {
-      alert("eror")
+      Report.failure("Nama materi tidak boleh sama", "", {
+        backOverlay: false,
+        messageFontSize: "16px",
+        cssAnimation: true,
+        cssAnimationStyle: "zoom",
+        position: "center-center",
+      });
     }else {
-      console.log('yes')
       try{
         const response = await axios[metode](setUrl, data, {
           withCredentials: true
@@ -62,7 +65,7 @@ const AddMatkulDosen = ({
         setOpen(false);
         handleClose(false)
         if(metode === 'post'){
-          navigate(`/tambahmateri/${response.data.materi.id}`)
+          navigate(`/tambahmateri/${idMataKuliah}/${response.data.materi.id}`)
           return
         }
         getData();
@@ -70,6 +73,7 @@ const AddMatkulDosen = ({
         return response.data;
       }catch (e){
         console.error(e);
+        navigate('/errorpage')
         return null;
       }
     }
@@ -90,7 +94,7 @@ const AddMatkulDosen = ({
             className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full mb-14  sm:my-8 sm:w-full sm:max-w-lg "
           >
             <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-              <h1 className="font-semibold mb-4">Buat Materi Mata Kuliah</h1>
+              <h1 className="font-semibold mb-4">{Object.keys(handleEditMateri).length !== 0 ? 'Edit Materi Mata Kuliah' : 'Buat Materi Mata Kuliah'}</h1>
                 <form className="flex gap-3 items-center w-full" method="POST">
                   <div className="flex gap-4 w-[100%]">
                     <div className="w-full">
