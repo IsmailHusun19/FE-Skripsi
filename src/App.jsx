@@ -19,15 +19,21 @@ import { Block } from "notiflix/build/notiflix-block-aio";
 import "./style/App.css";
 import TambahMateri from "./pages/TambahMateri";
 import ProtectedRoute from "./component/ProtectedRoute";
+import ErrorPage from "./pages/ErrorPage";
+import ScrollToTop from "./component/ScrollTop";
+import SoalKuis from "./pages/SoalKuis";
+import Laporan from "./pages/LaporanMahasiswa";
 
 function App() {
   return (
     <>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="*" element={<ErrorPage />} />
           <Route
             path="/matakuliah"
             element={
@@ -37,7 +43,7 @@ function App() {
             }
           />
           <Route
-            path="/materi"
+            path="/materi/:idMatkul/:idMateri?/:idSubMateri?"
             element={
               <ProtectedRoute>
                 <Materi />
@@ -53,7 +59,15 @@ function App() {
             }
           />
           <Route
-            path="/mengelolamateri"
+            path="/kuis/:idMatkul/:idMateri/:idSubMateri/:idMengerjakanKuis"
+            element={
+              <ProtectedRoute>
+                <SoalKuis />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mengelolamateri/:idMatkul"
             element={
               <ProtectedRoute>
                 <MengelolaMateri />
@@ -61,7 +75,15 @@ function App() {
             }
           />
           <Route
-            path='/tambahmateri/:id/:idSubMateri?'
+            path="/laporan/:idMatkul/:idMahasiswa?"
+            element={
+              <ProtectedRoute>
+                <Laporan />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tambahmateri/:idMataKuliah/:idMateri/:idSubMateri?"
             element={
               <ProtectedRoute>
                 <TambahMateri />

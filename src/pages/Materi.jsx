@@ -5,72 +5,185 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAnglesRight,
   faAngleDown,
-  faLock,
   faAngleUp,
   faUsers,
   faBook,
   faTrash,
   faBars,
+  faRobot,
+  faRightFromBracket,
+  faCircleCheck as faCircleCheckSolid,
 } from "@fortawesome/free-solid-svg-icons";
-import Gambar from "../assets/images1.jpg";
+import { faCircleCheck as faCircleCheckRegular } from "@fortawesome/free-regular-svg-icons";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
-  HomeModernIcon,
-  ChartPieIcon,
-  BellAlertIcon,
-  ChatBubbleLeftIcon,
-  ClipboardDocumentIcon,
-  UsersIcon,
-  EnvelopeIcon,
-  PowerIcon,
-  CursorArrowRippleIcon,
-  FaceFrownIcon,
-  CogIcon,
-} from "@heroicons/react/20/solid";
+  fetchMateri,
+  fetchSubMateri,
+  getMataKuliah,
+  getUserCheck,
+  getDataDetailSubMateri,
+  getDataDetailProgresMahasiswa,
+  postDataProgress,
+  deleteMatkulDosen,
+  deleteMatkulMahasiswa,
+} from "../config/FetchingData";
+import { Notify } from "notiflix/build/notiflix-notify-aio";
+import { motion } from "framer-motion";
+import Kuis from "./Kuis";
+import ChatBot from "../component/ChatBot";
+import axios from "axios";
+import { Loading } from "notiflix/build/notiflix-loading-aio";
+import { Confirm } from "notiflix/build/notiflix-confirm-aio";
+import SliderBar from "../component/SliderBar";
 
 const Materi = () => {
-  const menu2 = [
-    {
-      name: "Materi",
-      icon: <FontAwesomeIcon className="text-xl w-6" icon={faBook} />,
-      isActive: false,
-    },
-    {
-      name: "Mahasiswa",
-      isActive: false,
-      icon: <FontAwesomeIcon className="text-xl w-6" icon={faUsers} />,
-    },
-    {
-      name: "Tugas",
-      isActive: false,
-      icon: <FontAwesomeIcon className="text-xl w-6" icon={faBook} />
-    },
-    {
-      name: "Hapus Materi",
-      isActive: false,
-      icon: <FontAwesomeIcon className="text-xl w-6" icon={faTrash} />,
-    },
-  ];
+  const [user, setUser] = useState([]);
+  const [openChatBot, setOpenChatBot] = useState(false);
+  const [deleteMatkul, setDeleteMatkul] = useState(false);
 
-  const [materi, setMateri] = useState("");
-
-  const fetchMateri = async () => {
+  const getDataUser = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/materi/133");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const result = await response.json();
-      setMateri(result);
+      const dataUser = await getUserCheck();
+      setUser(dataUser);
     } catch (error) {
-      console.error("Error:", error);
+      console.log(error);
     }
   };
+
   useEffect(() => {
-    fetchMateri();
+    getDataUser();
   }, []);
 
+  const { idMatkul, idMateri, idSubMateri } = useParams();
+  const navigate = useNavigate();
+  const [materi, setMateri] = useState([]);
+  const [mataKuliah, setMataKuliah] = useState([]);
   const [ButtonMenuMateri, SetButtionMenuMateri] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [progressBar, setProgressBar] = useState(0);
+
+  const getData = async (IdSubMateri) => {
+    setLoading(true);
+    try {
+      const dataMateri = await fetchMateri(idMatkul);
+      const dataSubMateri = await fetchSubMateri(idMatkul);
+      const dataMataKuliah = await getMataKuliah(idMatkul);
+      const dataUser = await getUserCheck();
+      const dataProgress = await getDataDetailProgresMahasiswa(
+        idMatkul,
+        dataUser.id
+      );
+      const dataDetailSubMateri = await getDataDetailSubMateri(
+        IdSubMateri || idSubMateri || dataProgress.id
+      );
+      if (idSubMateri === undefined && IdSubMateri === undefined) {
+        const dataProgressPost = await postDataProgress(dataProgress.id);
+        navigate(
+          `/materi/${idMatkul}/${dataProgress.materiId}/${dataProgress.id}`
+        );
+      } else {
+        const dataProgressPost = await postDataProgress(idSubMateri);
+        if (dataProgressPost === undefined) {
+          navigate(
+            `/materi/${idMatkul}/${dataProgress.materiId}/${dataProgress.id}`
+          );
+        }
+      }
+
+      if (dataDetailSubMateri === undefined) {
+        navigate(
+          `/materi/${idMatkul}/${dataProgress.materiId}/${dataProgress.id}`
+        );
+      }
+
+      const safeDataMateri = Array.isArray(dataMateri) ? dataMateri : [];
+      const safeDataSubMateri = Array.isArray(dataSubMateri)
+        ? dataSubMateri
+        : [];
+
+      const formattedMateri = safeDataMateri.map((item) => {
+        const relatedSubMateri = safeDataSubMateri.filter(
+          (sub) => sub.materiId === item.id
+        );
+        const jumlahSelesai = relatedSubMateri.filter(
+          (sub) => sub.status === "selesai"
+        ).length;
+        const sudahSelesaiSemua = jumlahSelesai === relatedSubMateri.length;
+
+        return {
+          id: item.id,
+          judul: item.judul,
+          mataKuliahId: item.mataKuliahId,
+          subMateri: relatedSubMateri,
+          jumlahSelesai,
+          sudahSelesaiSemua,
+        };
+      });
+
+      const dataSubMateriProgress =
+        dataDetailSubMateri === undefined
+          ? dataProgress
+          : user?.role === "Dosen"
+          ? dataDetailSubMateri
+          : dataDetailSubMateri;
+
+      const formattedSubMateri = safeDataSubMateri.map((item) => {
+        if (item.id == IdSubMateri || item.id == idSubMateri) {
+          return {
+            ...item,
+            pertanyaan: dataSubMateriProgress.pertanyaan,
+            isi: dataSubMateriProgress.isi,
+            GambarMateri: dataSubMateriProgress.GambarMateri,
+            fileMateri: dataSubMateriProgress.fileMateri,
+            syaratKelulusan: dataSubMateriProgress.syaratKelulusan,
+            durasiMengerjakan: dataSubMateriProgress.durasiMengerjakan,
+            durasiUlang: dataSubMateriProgress.durasiUlang,
+          };
+        }
+        return item;
+      });
+
+      formattedMateri.forEach((materi) => {
+        materi.subMateri = formattedSubMateri.filter(
+          (sub) => sub.materiId === materi.id
+        );
+      });
+      setMateri(formattedMateri);
+      setMataKuliah(dataMataKuliah);
+    } catch (error) {
+      setMateri([]);
+      setMataKuliah([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, [idSubMateri]);
+
+  useEffect(() => {
+    if (!materi) return;
+
+    let totalSubMateri = 0;
+    let totalSelesai = 0;
+
+    materi.forEach((item) => {
+      item?.subMateri?.forEach((dataSubMateri) => {
+        totalSubMateri += 1;
+        if (dataSubMateri.status === "selesai") {
+          totalSelesai += 1;
+        }
+      });
+    });
+    if((totalSelesai || totalSubMateri) === 0){
+      setProgressBar(0)
+    }else{
+      const total = (totalSelesai / totalSubMateri) * 100
+      setProgressBar(total.toFixed(1));
+    }
+  }, [materi]);
+
   const handelCloseButtonMenuMateri = () => {
     SetButtionMenuMateri(true);
   };
@@ -79,12 +192,20 @@ const Materi = () => {
     SetButtionMenuMateri(false);
   };
 
-  const [ButtonListMateri, setButtonListMateri] = useState(false);
+  const [openMateri, setOpenMateri] = useState({});
 
-  const handleToggleButtonListMateri = () => {
-    setButtonListMateri((prev) => !prev);
-    console.log(!ButtonListMateri);
+  const handleToggleButtonListMateri = (id) => {
+    setOpenMateri((prevState) => ({
+      ...prevState,
+      [id]: !prevState[id],
+    }));
   };
+
+  useEffect(() => {
+    if (idMateri) {
+      setOpenMateri({ [idMateri]: true });
+    }
+  }, [idMateri]);
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
@@ -92,102 +213,165 @@ const Materi = () => {
     setIsSidebarCollapsed((prev) => !prev);
   };
 
+  const handleProgressSubMateri = async (
+    status,
+    idMateri,
+    idSubMateri,
+    type
+  ) => {
+    if (user?.role === "Dosen") {
+      navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`);
+    } else {
+      if (status === "belum_selesai") {
+        try {
+          const response = await axios.post(
+            `http://localhost:3000/sub-materi/selesai/${idSubMateri}`,
+            {},
+            {
+              withCredentials: true,
+            }
+          );
+          return navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`);
+        } catch (error) {
+          Notify.failure("Selesaikan materi sebelumnya terlebih dahulu");
+          console.error(error);
+          return undefined;
+        }
+      } else {
+        navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`);
+      }
+      getData(idSubMateri);
+    }
+  };
+
+  const handleDeleteMatkul = async () => {
+    try {
+      if (deleteMatkul) {
+        if (user.role === "Mahasiswa") {
+          Confirm.show(
+            "Meninggalkan Mata Kuliah",
+            "Yakin ingin meninggalkan mata kuliah?",
+            "Yes",
+            "No",
+            async () => {
+              const deleteMatkulMhs = await deleteMatkulMahasiswa(idMatkul);
+              Notify.success("Anda berhasil meninggalkan mata kuliah tersebut");
+              navigate("/matakuliah");
+            },
+            () => {
+              setDeleteMatkul(false);
+            }
+          );
+        } else {
+          Confirm.show(
+            "Menghapus Mata Kuliah",
+            "Yakin ingin menghapus mata kuliah?",
+            "Yes",
+            "No",
+            async () => {
+              const deleteMatkulDsn = await deleteMatkulDosen(idMatkul);
+              console.log("hwhwh");
+              navigate("/matakuliah");
+              Notify.success("Anda berhasil menghapus mata kuliah tersebut");
+            },
+            () => {
+              setDeleteMatkul(false);
+            }
+          );
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setDeleteMatkul(false);
+    }
+  };
+
+  useEffect(() => {
+    handleDeleteMatkul();
+  }, [deleteMatkul]);
+
+  useEffect(() => {
+    loading ? Loading.standard() : Loading.remove();
+  }, [loading]);
+
   return (
-    <div className="container-satu w-full">
+    <div className="container-satu">
       <Navbar />
-      <div className="flex">
+      <div className="flex relative">
         <div
-          className={`relative pt-[75.7px] transition-all duration-300 ease-in-out ${
+          className={`relative pt-[75.7px] min-h-screen transition-all duration-300 ease-in-out ${
             ButtonMenuMateri
               ? "w-full"
               : "w-full sm:w-[50%] md:w-[60%] lg:w-[70%]"
           }`}
         >
           <div
-            className={`fixed z-10 transition-all duration-300 ease-in-out bg-white h-screen ${
-              isSidebarCollapsed ? "w-16" : "sm:w-64"
+            className={`fixed z-10 transition-all duration-300 ease-in-out bg-white h-screen shadow-2xl ${
+              isSidebarCollapsed ? "w-16" : "w-64"
             }`}
           >
             <div className="border-b p-5 flex justify-between items-center">
-              <button onClick={toggleSidebar}>
+              <button onClick={() => toggleSidebar()}>
                 <FontAwesomeIcon className="text-2xl" icon={faBars} />
               </button>
             </div>
             <div className="border-b text-sm">
-              <Menus
-                menu={menu2}
+              <SliderBar
                 title={{ sm: "APPLICATION", xs: "APP" }}
                 isSidebarCollapsed={isSidebarCollapsed}
+                openChatBot={setOpenChatBot}
+                deleteMatkul={setDeleteMatkul}
               />
             </div>
           </div>
-
+          <ChatBot closeBot={openChatBot} openBot={setOpenChatBot} />
           <div className="main-container ml-20 mr-7 m-auto relative">
             <div className="editor-container editor-container_classic-editor editor-container_include-style">
               <div className="editor-container__editor">
-                <div dangerouslySetInnerHTML={{ __html: materi.value }} />
-                <h1 className="text-3xl font-extrabold my-5">
-                  Pemograman Web III
-                </h1>
-                <img className="w-full h-[300px]" src={Gambar} alt="" />
-                <p className="mt-3">
-                  Bahasa Pemrograman Web Dalam semua ilmu tentang pemrograman
-                  baik itu desktop, mobile, game maupun software atau aplikasi
-                  lainnya pasti selalu ada bahasa-bahasa pemrograman yang
-                  digunakan untuk membuat aplikasi tersebut yang berisi
-                  statement-statement, perintah, atau pun fungsi agar aplikasi
-                  yang dibuat sesuai dengan apa yang telah didesain oleh si
-                  programmer. Oleh karena itu pemrograman web pun memiliki
-                  banyak bahasa yang digunakan, di antaranya: HyperText Markup
-                  Language (HTML) HTML sebenarnya bukan sebuah bahasa
-                  pemrograman, melainkan markup language atau bahasa penandaan
-                  yang terdiri dari kumpulan tag. Pada dasarnya HTML hanya
-                  mendeskripsikan bahwa bagian tertentu dalam sebuah halaman web
-                  adalah isi yang harus ditampilkan oleh browser dengan cara
-                  tertentu. HTML merupakan standar internet yang didefinisikan
-                  dan dikendalikan oleh World Wide Web Consortium (W3C).
-                  Cascading Style Sheet (CSS) CSS merupakan bahasa stylesheet
-                  yang digunakan untuk mengatur tampilan suatu dokumen yang
-                  ditulis dengan HTML. CSS juga memiliki css framework dan
-                  digunakan untuk menambah desain-desain tertentu pada halaman
-                  web agar desain halaman menarik untuk dilihat. Penggunaan CSS
-                  paling umum adalah untuk mengatur halaman web yang ditulis
-                  dengan HTML atau XHTML. Hypertext Preprocessor (PHP) Bahasa
-                  pemrograman PHP merupakan salah satu bahasa scripting yang
-                  wajib dikuasai oleh seorang web developer. Karena sifatnya
-                  yang server-side scripting, maka untuk menjalankan bahasa
-                  pemrograman PHP tidak bisa hanya memanggil file yang
-                  berekstensi PHP saja. Bahasa pemrograman PHP memerlukan sebuah
-                  web server untuk menjalankannya. PHP juga dapat diintegrasikan
-                  dengan HTML, JavaScript, jQuery, Ajax dan lain sebagainya.
-                  Akan tetapi pada umumnya bahasa pemrograman PHP digunakan
-                  bersamaan dengan file yang bertipe HTML agar file tersebut
-                  dapat menjalankan berbagai fungsi. JavaScript JavaScript
-                  adalah bahasa scripting yang berjalan pada sisi client.
-                  Maksudnya adalah pemrosesan script dilakukan sendiri pada
-                  komputer user. Biasanya JavaScript digunakan untuk membuat
-                  animasi-animasi dan bentuk interaktif lain pada halaman web.
-                  Terbukti dari banyaknya library-library JavaScript yang dapat
-                  digunakan oleh programmer untuk membuat halaman web yang
-                  dibuat menjadi lebih interaktif. Untuk menjalankan script yang
-                  ditulis dalam JavaScript, kita membutuhkan browser yang
-                  mendukung dan mampu menjalankan JavaScript atau sering disebut
-                  dengan javascript-enabled browser. Structured Query Language
-                  (SQL) SQL merupakan domain-spesific language yang digunakan
-                  untuk mengolah data dalam Relational Database Management
-                  System (RDBMS). Aplikasi RDBMS yang banyak digunakan oleh para
-                  programmer aplikasi web untuk mengolah basis data mereka
-                  adalah MySQL. Biasanya digunakan fungsi-fungsi dalam bahasa
-                  pemrograman PHP untuk membuat, membaca, mengubah atau pun
-                  menghapus data dalam SQL yang kemudian dapat ditampilkan pada
-                  halaman web. Selain bahasa di atas, bisa dikatakan hampir
-                  semua bahasa pemrograman dapat digunakan dalam pemrograman web
-                  selama bahasa tersebut dapat bekerja dalam web server dan
-                  dapat menciptakan HTML, XML, dan XHTML. Beberapa bahasa
-                  pemrograman web yang populer di antaranya yaitu PHP, ASP.NET,
-                  Ruby on Rails, PERL, ASP classic, Python, dan JSP. Berkenalan
-                  Dengan Bahasa Pemrograman Web
-                </p>
+                {(() => {
+                  if (!materi || materi.length === 0) {
+                    return <p></p>;
+                  }
+                  const subMateri = materi
+                    .find((dataMateri) => dataMateri.id == idMateri)
+                    ?.subMateri.find(
+                      (dataSubMateri) => dataSubMateri.id == idSubMateri
+                    );
+
+                  if (!subMateri) {
+                    return <p>Materi tidak ditemukan</p>;
+                  }
+
+                  return (
+                    <>
+                      <h1 className="text-3xl font-extrabold my-5 judul">
+                        {subMateri.judul}
+                      </h1>
+                      {subMateri.type === "materi" ? (
+                        <div
+                          className="mt-3"
+                          dangerouslySetInnerHTML={{ __html: subMateri.isi }}
+                        />
+                      ) : (
+                        <Kuis
+                          namaMateriKuis={subMateri.judul}
+                          jumlahSoal={subMateri.pertanyaan?.length ?? 0}
+                          syaratKelulusan={subMateri?.syaratKelulusan}
+                          durasiUjian={subMateri?.durasiMengerjakan}
+                          durasiUlang={subMateri?.durasiUlang}
+                          data={{
+                            idSubMateri: subMateri?.id,
+                            idMateri: subMateri?.materiId,
+                            idMatkul: idMatkul,
+                            userId: user?.id,
+                            userRole: user?.role
+                          }}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -196,117 +380,134 @@ const Materi = () => {
           className={`fixed right-0 h-full border border-slate-400 rounded-md overflow-y-auto pb-[90px] bg-white transition-all duration-300 ease-in-out ${
             ButtonMenuMateri
               ? "w-0 mt-[75.7px] border-none"
-              : "w-full sm:w-[50%] md:w-[40%] lg:w-[30%] mt-[75.7px]"
+              : "w-full pl-[64px] sm:w-[50%] sm:pl-0 md:w-[40%] lg:w-[30%] mt-[75.7px]"
           }`}
         >
-          <div className="flex flex-col gap-3 text-slate-900 font-semibold text-lg p-6 fixed rounded-md bg-zinc-100 z-10 w-full sm:w-[50%] md:w-[40%] lg:w-[30%]">
-            <div className="flex gap-4 items-center">
+          <div
+            className={`flex flex-col text-slate-900 font-semibold text-lg fixed rounded-md bg-zinc-100 z-10 w-full sm:w-[50%] md:w-[40%] lg:w-[30%] ${
+              user?.role === "Mahasiswa" ? "gap-0 p-6" : "gap-1 py-9 px-5"
+            }`}
+          >
+            <div className="flex gap-4 items-center mb-3">
               <button
                 type="button"
-                onClick={handelCloseButtonMenuMateri}
+                onClick={() => handelCloseButtonMenuMateri()}
                 className="min-w-[32px] min-h-[32px] rounded-full bg-slate-800 text-slate-50 flex justify-center items-center"
               >
                 {<FontAwesomeIcon icon={faAnglesRight} />}
               </button>
               <div
-                className="tooltip tooltip-bottom"
-                data-tip="Pemograman Web II Pemograman Web II dhsdsdjss dshdgshdss dshdsd
-                sdbsgdhsn dsbhdgshdn sdshdusj"
+                className="tooltip tooltip-bottom cursor-pointer"
+                data-tip={mataKuliah.nama}
               >
                 <h1 className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[20ch] transition-all duration-300">
-                  Pemograman Web II Pemograman Web II dhsdsdjss dshdgshdss
-                  dshdsd sdbsgdhsn dsbhdgshdn sdshdusj
+                  {mataKuliah.nama}
                 </h1>
               </div>
             </div>
+            {user?.role === "Mahasiswa" ? (
+              <>
+                {" "}
+                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 my-2">
+                  <div
+                    className="bg-green-600 h-2.5 rounded-full"
+                    style={{ width: `${progressBar}%` }}
+                  ></div>
+                </div>
+                <div className="font-normal text-base text-slate-800 opacity-65">
+                  {progressBar}% Selesai
+                </div>
+              </>
+            ) : null}
           </div>
-          <div className="flex relative flex-col pt-[90px]">
-            <div className="w-[100%] p-2 rounded-lg m-auto relative">
+          <div
+            className={`flex relative flex-col ${
+              user?.role === "Mahasiswa" ? "pt-[145px]" : "pt-[110px]"
+            }`}
+          >
+            {materi.map((dataMateri) => (
               <div
-                onClick={handleToggleButtonListMateri}
-                className="cursor-pointer flex gap-4 items-center relative"
+                className="w-[100%] p-2 rounded-lg m-auto relative"
+                key={dataMateri.id}
               >
-                <FontAwesomeIcon
-                  className="text-slate-400"
-                  icon={ButtonListMateri ? faAngleUp : faAngleDown}
-                />
-                <h1 className="font-medium text-slate-800">Pengenalan HTML</h1>
-                <FontAwesomeIcon
-                  className="absolute right-0 text-slate-400"
-                  icon={faLock}
-                />
+                <div
+                  onClick={() => handleToggleButtonListMateri(dataMateri.id)}
+                  className="cursor-pointer flex gap-4 items-center relative"
+                >
+                  <FontAwesomeIcon
+                    className="text-slate-400"
+                    icon={openMateri[dataMateri.id] ? faAngleUp : faAngleDown}
+                  />
+                  <div className="w-full flex justify-between items-center">
+                    <h1 className="font-medium text-slate-800">
+                      {dataMateri.judul}
+                    </h1>
+                    {dataMateri.jumlahSelesai ===
+                    dataMateri.subMateri.length ? (
+                      <FontAwesomeIcon
+                        className="text-green-600 text-xl"
+                        icon={faCircleCheckSolid}
+                      />
+                    ) : (
+                      dataMateri.jumlahSelesai +
+                      "/" +
+                      dataMateri.subMateri.length
+                    )}
+                  </div>
+                </div>
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={
+                    openMateri[dataMateri.id]
+                      ? { height: "auto", opacity: 1 }
+                      : { height: 0, opacity: 0 }
+                  }
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-[22.5px] ml-[6.8px] border-l-[1.2px] border-slate-400 pr-4 flex flex-col gap-1 py-2">
+                    {dataMateri.subMateri.map((dataSubMateri) => (
+                      <div
+                        key={dataSubMateri.id}
+                        className="flex items-center gap-3"
+                      >
+                        {dataSubMateri.status === "selesai" ? (
+                          <FontAwesomeIcon
+                            className="text-green-600 text-xs"
+                            icon={faCircleCheckRegular}
+                          />
+                        ) : (
+                          <div className="w-3 h-3 rounded-full bg-slate-400"></div>
+                        )}
+                        <h1
+                          className={`cursor-pointer ${
+                            dataSubMateri.id == idSubMateri
+                              ? "font-bold"
+                              : "font-normal"
+                          }`}
+                          onClick={() =>
+                            handleProgressSubMateri(
+                              dataSubMateri.status,
+                              dataMateri.id,
+                              dataSubMateri.id,
+                              dataSubMateri.type
+                            )
+                          }
+                          key={dataSubMateri.id}
+                        >
+                          {dataSubMateri.judul}
+                        </h1>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
               </div>
-              <div
-                className={`pl-[22.5px] ml-[6.8px] border-l-[1.2px] border-slate-400 pr-4 flex flex-col gap-1 py-2 origin-top transition-transform duration-300 ease-in-out top-8 h-max
-    ${ButtonListMateri ? "hidden" : "flex h-0"} transform-gpu`}
-                style={{ transformOrigin: "top" }}
-              >
-                <h1>Pertemuan 1</h1>
-                <h1>Pertemuan 2</h1>
-                <h1>Pertemuan 3</h1>
-                <h1>Pertemuan 4</h1>
-                <h1>Pertemuan 5</h1>
-              </div>
-            </div>
-            <div className="w-[100%] p-2 rounded-lg m-auto relative">
-              <div
-                onClick={handleToggleButtonListMateri}
-                className="cursor-pointer flex gap-4 items-center relative"
-              >
-                <FontAwesomeIcon
-                  className="text-slate-400"
-                  icon={ButtonListMateri ? faAngleUp : faAngleDown}
-                />
-                <h1 className="font-medium text-slate-800">Pengenalan HTML</h1>
-                <FontAwesomeIcon
-                  className="absolute right-0 text-slate-400"
-                  icon={faLock}
-                />
-              </div>
-              <div
-                className={`pl-[22.5px] ml-[6.8px] border-l-[1.2px] border-slate-400 pr-4 flex flex-col gap-1 py-2 origin-top transition-transform duration-0 ease-in-out top-8 h-max
-    ${ButtonListMateri ? "scale-y-100" : "scale-y-0 h-0"} transform-gpu`}
-                style={{ transformOrigin: "top" }}
-              >
-                <h1>Pertemuan 1</h1>
-                <h1>Pertemuan 2</h1>
-                <h1>Pertemuan 3</h1>
-                <h1>Pertemuan 4</h1>
-                <h1>Pertemuan 5</h1>
-              </div>
-            </div>
-            <div className="w-[100%] p-2 rounded-lg m-auto relative">
-              <div
-                onClick={handleToggleButtonListMateri}
-                className="cursor-pointer flex gap-4 items-center relative"
-              >
-                <FontAwesomeIcon
-                  className="text-slate-400"
-                  icon={ButtonListMateri ? faAngleUp : faAngleDown}
-                />
-                <h1 className="font-medium text-slate-800">Pengenalan HTML</h1>
-                <FontAwesomeIcon
-                  className="absolute right-0 text-slate-400"
-                  icon={faLock}
-                />
-              </div>
-              <div
-                className={`pl-[22.5px] ml-[6.8px] border-l-[1.2px] border-slate-400 pr-4 flex flex-col gap-1 py-2 origin-top transition-transform duration-0 ease-in-out top-8 h-max
-    ${ButtonListMateri ? "scale-y-100" : "scale-y-0 h-0"} transform-gpu`}
-                style={{ transformOrigin: "top" }}
-              >
-                <h1>Pertemuan 1</h1>
-                <h1>Pertemuan 2</h1>
-                <h1>Pertemuan 3</h1>
-                <h1>Pertemuan 4</h1>
-                <h1>Pertemuan 5</h1>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
       <div
-        onClick={handelOpenButtonMenuMateri}
+        onClick={() => handelOpenButtonMenuMateri()}
         className={`rounded-tl-full rounded-bl-full bg-slate-800 text-slate-50 flex justify-center items-center fixed top-[101px] right-0
       transition-all duration-300 ease-in-out cursor-pointer ${
         ButtonMenuMateri
@@ -319,34 +520,5 @@ const Materi = () => {
     </div>
   );
 };
-
-function Menus({ menu, title, isSidebarCollapsed }) {
-  return (
-    <div className="py-5">
-      <h6
-        className="mb-4 text-[10px] sm:text-sm text-center sm:text-left sm:px-5">
-
-        <span className="">{isSidebarCollapsed ? title.xs : title.sm}</span>
-      </h6>
-      <ul>
-        {menu.map((val, index) => {
-          const menuActive = val.isActive
-            ? `bg-blue-300 bg-opacity-10 px-3 border border-blue-100 py-2 rounded-md text-blue-400 flex items-center`
-            : `px-3 py-2 flex items-center ${
-                isSidebarCollapsed ? "justify-center" : ""
-              }`;
-          return (
-            <li key={index} className={`${menuActive} cursor-pointer hover:bg-blue-700 hover:text-white my-5`}>
-              <div className="flex items-center justify-center">{val.icon}</div>
-              {!isSidebarCollapsed && (
-                <div className="ml-2">{val.name}</div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
 
 export default Materi;

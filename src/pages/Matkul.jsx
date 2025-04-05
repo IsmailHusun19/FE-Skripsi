@@ -18,7 +18,6 @@ const Matkul = () => {
   const [handleDataUsersCheck, setUHandleDataUsersCheck] = useState({});
   const [handleAddMatkul, setHandleAddMatkul] = useState(false);
   const [getDataMatkul, setDataMatkul] = useState([]);
-  const [getDataMatkulEdit, setDataMatkulEdit] = useState({});
   const [loading, setLoading] = useState(true);
 
   const getData = async () => {
@@ -52,69 +51,6 @@ const Matkul = () => {
     loading ? Loading.standard() : Loading.remove();
   }, [loading]);
 
-  const deleteDataMatkul = async (id) => {
-    Confirm.show(
-      "Konformasi",
-      "Apakah yakin ingin menghapus mata kuliah?",
-      "Yes",
-      "No",
-      async () => {
-        try {
-          const response = await axios.delete(
-            `http://localhost:3000/mata-kuliah/${id}`,
-            {
-              withCredentials: true,
-            }
-          );
-          if (response.status === 200) {
-            setDataMatkul((prev) => prev.filter((matkul) => matkul.id !== id));
-            Notify.success("Berhasil menghapus mata kuliah");
-          } else {
-            Notify.failure("Gagal menghapus mata kuliah");
-          }
-        } catch (error) {
-          Notify.failure("Gagal menghapus mata kuliah");
-        }
-      }
-    );
-  };
-
-  const deleteDataMatkulMahasiswa = async (id) => {
-    Confirm.show(
-      "Konformasi",
-      "Apakah yakin ingin menghapus mata kuliah?",
-      "Yes",
-      "No",
-      async () => {
-        try {
-          const response = await axios.delete(
-            `http://localhost:3000/mata-kuliah/leave/${id}`,
-            {
-              withCredentials: true,
-            }
-          );
-          if (response.status === 200) {
-            setDataMatkul((prev) => prev.filter((matkul) => matkul.id !== id));
-            Notify.success("Berhasil menghapus mata kuliah");
-          } else {
-            Notify.failure("Gagal menghapus mata kuliah");
-          }
-        } catch (error) {
-          Notify.failure("Gagal menghapus mata kuliah");
-        }
-      }
-    );
-  };
-
-  const editDataMatkul = async (matkul) => {
-    const data = await matkul;
-    setDataMatkulEdit(data);
-    setShowAddMatkulDosen(true);
-    console.log(matkul)
-  };
-
-  useEffect(() => {}, [getDataMatkulEdit]);
-
   useEffect(() => {
     if (Object.keys(handleDataUsersCheck).length > 0) {
       getData();
@@ -127,7 +63,6 @@ const Matkul = () => {
 
   const closeAddMatkulDosen = () => {
     setShowAddMatkulDosen(false);
-    setDataMatkulEdit({});
   };
 
   const handleUsersCheck = (data) => {
@@ -138,8 +73,6 @@ const Matkul = () => {
     setHandleAddMatkul(Object.keys(handleDataUsersCheck).length > 0);
   }, [handleDataUsersCheck]);
 
-  console.log(getDataMatkul)
-
   return (
     <div className="container-satu overflow-x-hidden">
       <Navbar />
@@ -149,7 +82,6 @@ const Matkul = () => {
           <AddMatkulDosen
             handleButtonClick={closeAddMatkulDosen}
             handleDataUsersCheck={handleDataUsersCheck}
-            editDataMatkul={getDataMatkulEdit}
             updateDataMatkul={getData}
           />
         )}
@@ -180,9 +112,8 @@ const Matkul = () => {
                 </svg>
               </button>
             </form>
-            <div className={!handleAddMatkul ? "hidden" : "relative group"}>
+            <div onClick={() => toggleAddMatkulDosen()} className={!handleAddMatkul ? "hidden" : "relative group"}>
               <img
-                onClick={toggleAddMatkulDosen}
                 className="w-12 cursor-pointer"
                 src={AddMatkul}
                 alt="Tambah Matkul"
@@ -195,7 +126,7 @@ const Matkul = () => {
         </div>
         <div className="content-matkul w-[90%] m-auto md:w-[95%] grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
           {getDataMatkul.length === 0 && !loading ? (
-            <h1 className="absolute flex-col gap-6 top-72 inset-0 flex items-center justify-center text-lg text-slate-500 font-semibold text-center">
+            <h1 className="absolute flex-col gap-6 top-[305px] inset-0 flex items-center justify-center text-lg text-slate-500 font-semibold text-center">
               <FontAwesomeIcon className="text-5xl text-slate-500 sm:text-9xl" icon={faFaceSadTear} />
               Mata Kuliah Kosong
             </h1>
@@ -203,7 +134,7 @@ const Matkul = () => {
             getDataMatkul.map((matkul) => (
               <div key={matkul.id} className="flex flex-col items-center">
                 <Link
-                  to="/materi"
+                  to={`/materi/${matkul.id}`}
                   className="shadow-xl relative cursor-pointer transition-all hover:scale-105 hover:text-sky-500 w-[100%] flex items-center flex-col gap-2 bg-white p-4 rounded-lg"
                 >
                   <img

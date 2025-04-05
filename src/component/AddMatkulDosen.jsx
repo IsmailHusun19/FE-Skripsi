@@ -7,7 +7,6 @@ import { Report } from "notiflix/build/notiflix-report-aio";
 const AddMatkulDosen = ({
   handleButtonClick,
   handleDataUsersCheck,
-  editDataMatkul,
   updateDataMatkul,
 }) => {
   const [open, setOpen] = useState(true);
@@ -17,47 +16,27 @@ const AddMatkulDosen = ({
     setName(event.target.value);
   };
 
-  useEffect(() => {
-    if (Object.keys(editDataMatkul).length > 0) {
-      setName(editDataMatkul.namaMataKuliah);
-    } else {
-      resetForm();
-    }
-  }, [editDataMatkul]);
-
   const resetForm = () => {
     setName("");
   };
 
   const handleSubmitDosen = async (e) => {
     e.preventDefault();
-    const url = editDataMatkul.id
-      ? `mata-kuliah/${editDataMatkul.id}`
-      : "mata-kuliah";
-
     try {
-      await axios({
-        method: editDataMatkul.id ? "put" : "post",
-        url: `http://localhost:3000/${url}`,
-        data: {
+      const response = await axios.post("http://localhost:3000/mata-kuliah",  {
           nama: name,
-        },
+      }, {
         withCredentials: true,
-      });
+      })
       await updateDataMatkul();
       handleButtonClick();
-      Notify.success(
-        editDataMatkul.id
-          ? "Berhasil mengedit mata kuliah"
-          : "Berhasil menambah mata kuliah"
-      );
+      Notify.success("Berhasil menambah mata kuliah");
     } catch (error) {
       Report.failure("Lengkapi data dengan benar!", "", "Okay", {
         backOverlay: false,
       });
     }
     resetForm();
-    editDataMatkul = {};
   };
 
   const handleSubmitMahasiswa = async (e) => {

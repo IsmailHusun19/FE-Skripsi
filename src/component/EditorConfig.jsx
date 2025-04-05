@@ -85,6 +85,7 @@ import {
 } from "ckeditor5";
 
 import "ckeditor5/ckeditor5.css";
+import { id } from "date-fns/locale";
 
 export default function EditorConfig({setDataEditorView, dataEditor, dataIdSubMateri}) {
   const LICENSE_KEY = 'GPL';
@@ -97,6 +98,12 @@ export default function EditorConfig({setDataEditorView, dataEditor, dataIdSubMa
   useEffect(() => {
     setDataEditorView(dataEditorView);
   }, [dataEditorView, setDataEditorView]);
+
+  useEffect(() => {
+    if(dataEditor !== ""){
+      setDataEditorView(dataEditor);
+    }
+  }, []);
 
   useEffect(() => {
     setIsLayoutReady(true);
