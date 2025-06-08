@@ -10,7 +10,11 @@ import axios from "axios";
 import { Confirm } from "notiflix/build/notiflix-confirm-aio";
 import { Notify } from "notiflix/build/notiflix-notify-aio";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faPencil, faFaceSadTear } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrash,
+  faPencil,
+  faFaceSadTear,
+} from "@fortawesome/free-solid-svg-icons";
 import { Loading } from "notiflix/build/notiflix-loading-aio";
 
 const Matkul = () => {
@@ -19,13 +23,14 @@ const Matkul = () => {
   const [handleAddMatkul, setHandleAddMatkul] = useState(false);
   const [getDataMatkul, setDataMatkul] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const getData = async () => {
     try {
       const response = await axios.get("http://localhost:3000/matakuliah", {
         withCredentials: true,
       });
-      console.log(response)
+      console.log(response);
       if (response.status === 200) {
         const data = await response.data;
         const mataKuliah =
@@ -91,11 +96,16 @@ const Matkul = () => {
           </h1>
           <h3 className="font-semibold text-slate-500">Pilih Mata Kuliah</h3>
           <div className="pt-2 flex justify-center items-center gap-6 relative mx-auto text-gray-600 pb-9 w-[85%] sm:w-[80%] md:w-[50%]">
-            <form className="w-full relative">
+            <form
+              className="w-full relative"
+              onSubmit={(e) => e.preventDefault()}
+            >
               <input
                 className="border-2 w-full border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-base focus:outline-none"
                 type="text"
                 name="search"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
                 placeholder="Cari mata kuliah"
               />
               <button
@@ -112,7 +122,10 @@ const Matkul = () => {
                 </svg>
               </button>
             </form>
-            <div onClick={() => toggleAddMatkulDosen()} className={!handleAddMatkul ? "hidden" : "relative group"}>
+            <div
+              onClick={() => toggleAddMatkulDosen()}
+              className={!handleAddMatkul ? "hidden" : "relative group"}
+            >
               <img
                 className="w-12 cursor-pointer"
                 src={AddMatkul}
@@ -126,27 +139,36 @@ const Matkul = () => {
         </div>
         <div className="content-matkul w-[90%] m-auto md:w-[95%] grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
           {getDataMatkul.length === 0 && !loading ? (
-            <h1 className="absolute flex-col gap-6 top-[305px] inset-0 flex items-center justify-center text-lg text-slate-500 font-semibold text-center">
-              <FontAwesomeIcon className="text-5xl text-slate-500 sm:text-9xl" icon={faFaceSadTear} />
-              Mata Kuliah Kosong
-            </h1>
+            <h1 className="...">...</h1>
           ) : (
-            getDataMatkul.map((matkul) => (
-              <div key={matkul.id} className="flex flex-col items-center">
-                <Link
-                  to={`/materi/${matkul.id}`}
-                  className="shadow-xl relative cursor-pointer transition-all hover:scale-105 hover:text-sky-500 w-[100%] flex items-center flex-col gap-2 bg-white p-4 rounded-lg"
-                >
-                  <img
-                    className="w-[200px]"
-                    src={MatkulImage}
-                    alt={matkul.nama}
-                  />
-                  <h1 className="font-semibold text-sm">{matkul.namaMataKuliah}</h1>
-                  <p>{handleDataUsersCheck.role === "Mahasiswa" ? matkul.namaDosen : ""}</p>
-                </Link>
-              </div>
-            ))
+            getDataMatkul
+              .filter((matkul) =>
+                matkul.namaMataKuliah
+                  .toLowerCase()
+                  .includes(searchKeyword.toLowerCase())
+              )
+              .map((matkul) => (
+                <div key={matkul.id} className="flex flex-col items-center">
+                  <Link
+                    to={`/materi/${matkul.id}`}
+                    className="shadow-xl relative cursor-pointer transition-all hover:scale-105 hover:text-sky-500 w-[100%] flex items-center flex-col gap-2 bg-white p-4 rounded-lg"
+                  >
+                    <img
+                      className="w-[200px]"
+                      src={MatkulImage}
+                      alt={matkul.nama}
+                    />
+                    <h1 className="font-semibold text-sm">
+                      {matkul.namaMataKuliah}
+                    </h1>
+                    <p>
+                      {handleDataUsersCheck.role === "Mahasiswa"
+                        ? matkul.namaDosen
+                        : ""}
+                    </p>
+                  </Link>
+                </div>
+              ))
           )}
         </div>
       </div>

@@ -324,7 +324,7 @@ const ChatBot = ({ closeBot, openBot }) => {
                 ))}
             </div>
             {messages?.length <= 0 ? (
-              <h1 className="text-3xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 inline-block text-transparent bg-clip-text">
+              <h1 className="text-3xl w-max absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 inline-block text-transparent bg-clip-text">
                 <Typewriter
                   options={{
                     strings: ["Hallo, " + user + ".."],

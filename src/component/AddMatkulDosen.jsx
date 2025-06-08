@@ -3,6 +3,8 @@ import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import axios from "axios";
 import { Notify } from "notiflix/build/notiflix-notify-aio";
 import { Report } from "notiflix/build/notiflix-report-aio";
+import { Confirm } from "notiflix/build/notiflix-confirm-aio";
+import { getAllMataKuliah, postDuplikatMataKuliah } from "../config/FetchingData";
 
 const AddMatkulDosen = ({
   handleButtonClick,
@@ -22,21 +24,57 @@ const AddMatkulDosen = ({
 
   const handleSubmitDosen = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:3000/mata-kuliah",  {
+    const buatMataKuliah = async () => {
+      const response = await axios.post(
+        "http://localhost:3000/mata-kuliah",
+        {
           nama: name,
-      }, {
-        withCredentials: true,
-      })
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
       await updateDataMatkul();
       handleButtonClick();
       Notify.success("Berhasil menambah mata kuliah");
+      resetForm();
+    };
+    try {
+      const getAllData = await getAllMataKuliah();
+      const result = getAllData.find((item) => item.kodeGabung === name);
+      console.log(getAllData)
+
+      if (result) {
+        Confirm.init({ width: "400px" });
+        Confirm.show(
+          "Konfirmasi Salin Mata Kuliah",
+          `Mata kuliah sudah dibuat oleh dosen ${
+            result.dosen?.nama || "lain"
+          }.\nIngin menyalin data mata kuliah ini?`,
+          "Ya, Salin",
+          "Tidak",
+          async () => {
+            Notify.success("Berhasil menyalin mata kuliah");
+            await postDuplikatMataKuliah(result.id)
+            await updateDataMatkul();
+            handleButtonClick();
+            resetForm();
+          },
+          () => {
+            buatMataKuliah();
+          }
+        );
+      } else {
+        buatMataKuliah();
+      }
     } catch (error) {
+      console.error("Error submit:", error);
       Report.failure("Lengkapi data dengan benar!", "", "Okay", {
         backOverlay: false,
       });
+      resetForm();
     }
-    resetForm();
   };
 
   const handleSubmitMahasiswa = async (e) => {
@@ -60,7 +98,6 @@ const AddMatkulDosen = ({
       });
     }
   };
-
 
   return (
     <Dialog open={open} onClose={() => setOpen(true)} className="relative z-10">

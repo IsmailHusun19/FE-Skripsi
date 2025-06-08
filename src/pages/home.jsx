@@ -5,8 +5,107 @@ import HomeTiga from "../assets/HomeTiga.svg";
 import HomeEmpat from "../assets/HomeEmpat.svg";
 import Unbaja from "../assets/unbaja.jpg";
 import Footer from "../component/Footer";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Report } from "notiflix/build/notiflix-report-aio";
+import { getUserCheck, postDataHubungiKami, postDataHubungiKamiLogin } from "../config/FetchingData";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const scrollTo = params.get("scrollTo");
+
+    if (scrollTo) {
+      const targetElement = document.getElementById(scrollTo);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [location]);
+  const [formHubungiKami, setFormHubungiKami] = useState({
+    nama: "",
+    email: "",
+    noTelp: "",
+    pesan: ""
+  });
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState([]);
+
+  const getDataUser = async () => {
+    setLoading(true);
+    try {
+      const dataUser = await getUserCheck();
+      setUser(dataUser);
+      setFormHubungiKami({
+        nama: user.nama,
+        email: user.email,
+      })
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormHubungiKami((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  useEffect(() => {
+    getDataUser();
+  }, []);
+
+  const handleKirim = async (e) => {
+    e.preventDefault();
+    const notif = () => {
+      Report.success("Berhasil mengirim", "", "Okay", {
+        backOverlay: false,
+      });
+    }
+    if(!loading) {
+      if(user){
+        try{
+          const sendData = await postDataHubungiKamiLogin(formHubungiKami)
+          if(sendData){
+            setFormHubungiKami({
+              nama: user.nama,
+              email: user.email,
+              noTelp: "",
+              pesan: ""
+            })
+            notif()
+          }
+        }catch(e){
+          console.error(e)
+        }
+      }else{
+        try{
+          const sendData = await postDataHubungiKami(formHubungiKami)
+          if(sendData){
+            notif()
+            setFormHubungiKami({
+              nama: "",
+              email: "",
+              noTelp: "",
+              pesan: ""
+            })
+          }
+        }catch(e){
+          console.error(e)
+        }
+      }
+    }
+
+  }
+
+
   return (
     <div className="container-satu">
       <Navbar />
@@ -23,7 +122,7 @@ const Home = () => {
               Jaya hadir untuk mendukung perjalanan pendidikan Anda menuju masa
               depan yang lebih baik.{" "}
             </p>
-            <button type="button">Mulai Belajar Sekarang!</button>
+            <button onClick={() => navigate("/matakuliah")} type="button">Mulai Belajar Sekarang!</button>
           </div>
           <div className="box-landingpage-satu-gambar">
             <img src={HomeSatu} />
@@ -88,7 +187,7 @@ const Home = () => {
           d="M0,224L60,224C120,224,240,224,360,208C480,192,600,160,720,165.3C840,171,960,213,1080,213.3C1200,213,1320,171,1380,149.3L1440,128L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
         ></path>
       </svg>
-      <div className="box-landingpage-tiga">
+      <div id="tentang" className="box-landingpage-tiga scroll-mt-20">
         <div className="box-landingpage-tiga-content">
           <img src={Unbaja} alt="" />
           <div>
@@ -110,7 +209,7 @@ const Home = () => {
       </div>
       <div className="contact-me">
         <div className="contact-me-satu">
-          <div className="hubungi-kami">
+          <div id="contact" className="hubungi-kami">
             <div className="isolate pt-24 sm:pt-32">
               <div
                 aria-hidden="true"
@@ -122,39 +221,26 @@ const Home = () => {
                   Hubungi Kami
                 </h2>
               </div>
-              <form action="#" method="POST" className=" mt-10 w-full">
+              <form onSubmit={handleKirim} method="POST" className=" mt-10 w-full">
                 <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
-                  <div>
+                  <div className="sm:col-span-2">
                     <label
-                      htmlFor="first-name"
+                      htmlFor="nama"
                       className="block text-sm font-semibold leading-6 text-gray-900"
                     >
-                      Nama depan
+                      Nama
                     </label>
                     <div className="mt-2.5">
                       <input
-                        id="first-name"
-                        name="first-name"
+                      required
+                        id="nama"
+                        value={user?.nama || formHubungiKami.nama || ""}
+                        name="nama"
+                        disabled={user ? true : false}
+                        onChange={handleChange}
                         type="text"
                         autoComplete="given-name"
-                        className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="last-name"
-                      className="block text-sm font-semibold leading-6 text-gray-900"
-                    >
-                      Nama belakang
-                    </label>
-                    <div className="mt-2.5">
-                      <input
-                        id="last-name"
-                        name="last-name"
-                        type="text"
-                        autoComplete="family-name"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className="block disabled:text-black disabled:bg-white disabled:opacity-100 disabled:cursor-not-allowed w-full rounded-md border-0 px-3.5 font-medium py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
                     </div>
                   </div>
@@ -167,45 +253,56 @@ const Home = () => {
                     </label>
                     <div className="mt-2.5">
                       <input
+                      required
                         id="email"
                         name="email"
+                        value={user?.email || formHubungiKami.email || ""}
+                        disabled={user ? true : false}
+                        onChange={handleChange}
                         type="email"
                         autoComplete="email"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className="block disabled:text-black disabled:bg-white disabled:opacity-100 disabled:cursor-not-allowed w-full rounded-md border-0 px-3.5 font-medium py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
                     </div>
                   </div>
                   <div className="sm:col-span-2">
                     <label
-                      htmlFor="phone-number"
+                      htmlFor="noTelp"
                       className="block text-sm font-semibold leading-6 text-gray-900"
                     >
                       Telepon
                     </label>
                     <div className="relative mt-2.5">
                       <input
-                        id="phone-number"
-                        name="phone-number"
-                        type="tel"
-                        autoComplete="tel"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      required
+
+                        id="noTelp"
+                        name="noTelp"
+                        onChange={handleChange}
+                        value={formHubungiKami.noTelp || ""}
+                        type="number"
+                        autoComplete=""
+                        className="block w-full rounded-md border-0 px-3.5 font-medium py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
                     </div>
                   </div>
                   <div className="sm:col-span-2">
                     <label
-                      htmlFor="message"
+                      htmlFor="pesan"
                       className="block text-sm font-semibold leading-6 text-gray-900"
                     >
                       Pesan
                     </label>
                     <div className="mt-2.5">
                       <textarea
-                        id="message"
-                        name="message"
+                      required
+
+                        id="pesan"
+                        name="pesan"
                         rows={4}
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        defaultValue={""}
+                        value={formHubungiKami.pesan || ""}
+                        onChange={handleChange}
+                        className="block w-full rounded-md border-0 px-3.5 font-medium py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
                     </div>
                   </div>

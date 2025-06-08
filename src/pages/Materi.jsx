@@ -6,16 +6,13 @@ import {
   faAnglesRight,
   faAngleDown,
   faAngleUp,
-  faUsers,
-  faBook,
-  faTrash,
   faBars,
-  faRobot,
-  faRightFromBracket,
+  faFolderOpen,
+  faLock,
   faCircleCheck as faCircleCheckSolid,
 } from "@fortawesome/free-solid-svg-icons";
 import { faCircleCheck as faCircleCheckRegular } from "@fortawesome/free-regular-svg-icons";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, data } from "react-router-dom";
 import {
   fetchMateri,
   fetchSubMateri,
@@ -26,6 +23,8 @@ import {
   postDataProgress,
   deleteMatkulDosen,
   deleteMatkulMahasiswa,
+  PutDataProgressMahasiswa,
+  getDataKuisionerMahasiswa,
 } from "../config/FetchingData";
 import { Notify } from "notiflix/build/notiflix-notify-aio";
 import { motion } from "framer-motion";
@@ -35,11 +34,20 @@ import axios from "axios";
 import { Loading } from "notiflix/build/notiflix-loading-aio";
 import { Confirm } from "notiflix/build/notiflix-confirm-aio";
 import SliderBar from "../component/SliderBar";
+import {
+  FaFileImage,
+  FaFilePdf,
+  FaFileVideo,
+  FaFileAudio,
+  FaFileExcel,
+  FaFileAlt,
+} from "react-icons/fa";
 
 const Materi = () => {
   const [user, setUser] = useState([]);
   const [openChatBot, setOpenChatBot] = useState(false);
   const [deleteMatkul, setDeleteMatkul] = useState(false);
+  const [openMateriTambahan, setOpenMateriTambahan] = useState(false);
 
   const getDataUser = async () => {
     try {
@@ -61,10 +69,13 @@ const Materi = () => {
   const [ButtonMenuMateri, SetButtionMenuMateri] = useState(false);
   const [loading, setLoading] = useState(true);
   const [progressBar, setProgressBar] = useState(0);
+  const [doneKuisioner, setDoneKuisioner] = useState(false);
+  const [lock, setLock] = useState(false);
 
   const getData = async (IdSubMateri) => {
     setLoading(true);
     try {
+      const putProgress = await PutDataProgressMahasiswa(idMatkul);
       const dataMateri = await fetchMateri(idMatkul);
       const dataSubMateri = await fetchSubMateri(idMatkul);
       const dataMataKuliah = await getMataKuliah(idMatkul);
@@ -73,27 +84,43 @@ const Materi = () => {
         idMatkul,
         dataUser.id
       );
+      console.log(dataProgress);
       const dataDetailSubMateri = await getDataDetailSubMateri(
-        IdSubMateri || idSubMateri || dataProgress.id
+        IdSubMateri || idSubMateri || dataProgress.progress.id
       );
-      if (idSubMateri === undefined && IdSubMateri === undefined) {
-        const dataProgressPost = await postDataProgress(dataProgress.id);
-        navigate(
-          `/materi/${idMatkul}/${dataProgress.materiId}/${dataProgress.id}`
-        );
-      } else {
-        const dataProgressPost = await postDataProgress(idSubMateri);
-        if (dataProgressPost === undefined) {
+
+      const handleNavigate = () => {
+        if (dataProgress.materi) {
           navigate(
-            `/materi/${idMatkul}/${dataProgress.materiId}/${dataProgress.id}`
+            `/materi/${idMatkul}/${dataProgress.progress.materiId}/${dataProgress.progress.id}`
           );
+        } else {
+          setLock(true);
+          navigate(`/materi/${idMatkul}/${dataProgress.progress.materiId}/`);
+        }
+      };
+      if (user.role === "Dosen") {
+        if (idSubMateri === undefined && IdSubMateri === undefined) {
+          navigate(
+            `/materi/${idMatkul}/${dataProgress.progress.materiId}/${dataProgress.progress.id}`
+          );
+        }
+      } else {
+        if (idSubMateri === undefined && IdSubMateri === undefined) {
+          const dataProgressPost = await postDataProgress(
+            dataProgress.progress.id
+          );
+          handleNavigate();
+        } else {
+          const dataProgressPost = await postDataProgress(idSubMateri);
+          if (dataProgressPost === undefined && IdSubMateri === undefined) {
+            handleNavigate();
+          }
         }
       }
 
       if (dataDetailSubMateri === undefined) {
-        navigate(
-          `/materi/${idMatkul}/${dataProgress.materiId}/${dataProgress.id}`
-        );
+        handleNavigate();
       }
 
       const safeDataMateri = Array.isArray(dataMateri) ? dataMateri : [];
@@ -112,6 +139,7 @@ const Materi = () => {
 
         return {
           id: item.id,
+          status: item.status,
           judul: item.judul,
           mataKuliahId: item.mataKuliahId,
           subMateri: relatedSubMateri,
@@ -122,7 +150,7 @@ const Materi = () => {
 
       const dataSubMateriProgress =
         dataDetailSubMateri === undefined
-          ? dataProgress
+          ? dataProgress.progress
           : user?.role === "Dosen"
           ? dataDetailSubMateri
           : dataDetailSubMateri;
@@ -158,9 +186,31 @@ const Materi = () => {
     }
   };
 
+  const getDataKuisioner = async () => {
+    if (user.role === "Mahasiswa") {
+      try {
+        const dataKuisioner = await getDataKuisionerMahasiswa(idMatkul);
+        console.log(dataKuisioner);
+        if (dataKuisioner) {
+          setDoneKuisioner(true);
+        } else {
+          setDoneKuisioner(false);
+        }
+      } catch (error) {
+        console.log(error);
+        setDoneKuisioner(false);
+      }
+    } else {
+      setDoneKuisioner(false);
+    }
+  };
+
   useEffect(() => {
-    getData();
-  }, [idSubMateri]);
+    if (user.role) {
+      getData();
+      getDataKuisioner();
+    }
+  }, [idSubMateri, user]);
 
   useEffect(() => {
     if (!materi) return;
@@ -176,10 +226,10 @@ const Materi = () => {
         }
       });
     });
-    if((totalSelesai || totalSubMateri) === 0){
-      setProgressBar(0)
-    }else{
-      const total = (totalSelesai / totalSubMateri) * 100
+    if ((totalSelesai || totalSubMateri) === 0) {
+      setProgressBar(0);
+    } else {
+      const total = (totalSelesai / totalSubMateri) * 100;
       setProgressBar(total.toFixed(1));
     }
   }, [materi]);
@@ -217,30 +267,34 @@ const Materi = () => {
     status,
     idMateri,
     idSubMateri,
-    type
+    publish
   ) => {
     if (user?.role === "Dosen") {
       navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`);
     } else {
-      if (status === "belum_selesai") {
-        try {
-          const response = await axios.post(
-            `http://localhost:3000/sub-materi/selesai/${idSubMateri}`,
-            {},
-            {
-              withCredentials: true,
-            }
-          );
-          return navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`);
-        } catch (error) {
-          Notify.failure("Selesaikan materi sebelumnya terlebih dahulu");
-          console.error(error);
-          return undefined;
+      if (publish) {
+        if (status === "belum_selesai") {
+          try {
+            const response = await axios.post(
+              `http://localhost:3000/sub-materi/selesai/${idSubMateri}`,
+              {},
+              {
+                withCredentials: true,
+              }
+            );
+            return navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`);
+          } catch (error) {
+            Notify.failure("Selesaikan materi sebelumnya terlebih dahulu");
+            console.error(error);
+            return undefined;
+          }
+        } else {
+          navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`);
         }
+        getData(idSubMateri);
       } else {
-        navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`);
+        Notify.failure("Materi masih dikunci oleh dosen");
       }
-      getData(idSubMateri);
     }
   };
 
@@ -291,6 +345,93 @@ const Materi = () => {
     handleDeleteMatkul();
   }, [deleteMatkul]);
 
+  const getFileTypeFromUrl = (url) => {
+    const extension = url.split(".").pop().toLowerCase();
+
+    const mapping = {
+      jpg: "image",
+      jpeg: "image",
+      png: "image",
+      gif: "image",
+      pdf: "pdf",
+      mp4: "video",
+      mp3: "audio",
+      zip: "zip",
+      rar: "zip",
+      xlsx: "excel",
+      xls: "excel",
+      doc: "document",
+      docx: "document",
+    };
+
+    return mapping[extension] || "unknown";
+  };
+
+  useEffect(() => {
+    if (!loading && materi.length > 0) {
+      const embeds = document.querySelectorAll("oembed[url]");
+
+      embeds.forEach((el) => {
+        const url = el.getAttribute("url");
+
+        if (url && (url.includes("youtube.com") || url.includes("youtu.be"))) {
+          let videoId = null;
+
+          try {
+            const parsedUrl = new URL(url);
+            if (parsedUrl.hostname.includes("youtube.com")) {
+              videoId = parsedUrl.searchParams.get("v");
+            } else if (parsedUrl.hostname.includes("youtu.be")) {
+              videoId = parsedUrl.pathname.slice(1);
+            }
+          } catch (err) {
+            console.error("URL parsing error", err);
+          }
+
+          if (videoId) {
+            // Buat iframe responsif
+            const iframe = document.createElement("iframe");
+            iframe.setAttribute(
+              "src",
+              `https://www.youtube.com/embed/${videoId}`
+            );
+            iframe.setAttribute("frameborder", "0");
+            iframe.setAttribute("allowfullscreen", "");
+            iframe.setAttribute(
+              "allow",
+              "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            );
+            iframe.setAttribute("title", "YouTube video");
+
+            // Style responsif
+            iframe.style.position = "absolute";
+            iframe.style.top = "0";
+            iframe.style.left = "0";
+            iframe.style.width = "100%";
+            iframe.style.height = "100%";
+
+            // Bungkus iframe dalam div responsif
+            const wrapper = document.createElement("div");
+            wrapper.style.position = "relative";
+            wrapper.style.paddingBottom = "56.25%"; // aspek rasio 16:9
+            wrapper.style.height = "0";
+            wrapper.style.overflow = "hidden";
+            wrapper.style.marginBottom = "1rem";
+
+            wrapper.appendChild(iframe);
+
+            const parent = el.closest("figure");
+            if (parent) {
+              parent.replaceWith(wrapper);
+            } else {
+              el.replaceWith(wrapper);
+            }
+          }
+        }
+      });
+    }
+  }, [loading, materi]);
+
   useEffect(() => {
     loading ? Loading.standard() : Loading.remove();
   }, [loading]);
@@ -299,6 +440,18 @@ const Materi = () => {
     <div className="container-satu">
       <Navbar />
       <div className="flex relative">
+        {!loading ? (
+          materi.length === 0 ? (
+            <>
+              {" "}
+              <div className="absolute pt-[75px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center flex-col gap-5">
+                {" "}
+                <FontAwesomeIcon className="text-[100px]" icon={faFolderOpen} />
+                <h1>Belum ada materi yang diunggah</h1>
+              </div>
+            </>
+          ) : null
+        ) : null}
         <div
           className={`relative pt-[75.7px] min-h-screen transition-all duration-300 ease-in-out ${
             ButtonMenuMateri
@@ -326,7 +479,9 @@ const Materi = () => {
             </div>
           </div>
           <ChatBot closeBot={openChatBot} openBot={setOpenChatBot} />
-          <div className="main-container ml-20 mr-7 m-auto relative">
+          <div
+            className="ml-20 mr-7 m-auto relative main-container"
+          >
             <div className="editor-container editor-container_classic-editor editor-container_include-style">
               <div className="editor-container__editor">
                 {(() => {
@@ -340,7 +495,11 @@ const Materi = () => {
                     );
 
                   if (!subMateri) {
-                    return <p>Materi tidak ditemukan</p>;
+                    return (
+                      <>
+                          <h2 className="font-normal text-xl">Materi masih dikunci oleh dosen</h2>
+                      </>
+                    );
                   }
 
                   return (
@@ -349,10 +508,119 @@ const Materi = () => {
                         {subMateri.judul}
                       </h1>
                       {subMateri.type === "materi" ? (
-                        <div
-                          className="mt-3"
-                          dangerouslySetInnerHTML={{ __html: subMateri.isi }}
-                        />
+                        <>
+                          <div
+                            className="mt-3"
+                            dangerouslySetInnerHTML={{ __html: subMateri.isi }}
+                          />
+                          {subMateri.fileMateri &&
+                          subMateri.fileMateri.length !== 0 ? (
+                            <div className="flex w-full flex-wrap gap-2">
+                              {subMateri.fileMateri.map((file) => {
+                                const fileType = getFileTypeFromUrl(file.url);
+
+                                const renderIcon = () => {
+                                  switch (fileType) {
+                                    case "image":
+                                      return <FaFileImage size={40} />;
+                                    case "pdf":
+                                      return <FaFilePdf size={40} />;
+                                    case "video":
+                                      return <FaFileVideo size={40} />;
+                                    case "audio":
+                                      return <FaFileAudio size={40} />;
+                                    case "excel":
+                                      return <FaFileExcel size={40} />;
+                                    default:
+                                      return <FaFileAlt size={40} />;
+                                  }
+                                };
+
+                                const renderText = () => {
+                                  switch (fileType) {
+                                    case "image":
+                                      return (
+                                        <>
+                                          File Gambar
+                                          <br />
+                                          Klik untuk melihat
+                                        </>
+                                      );
+                                    case "pdf":
+                                      return (
+                                        <>
+                                          File PDF
+                                          <br />
+                                          Klik untuk melihat
+                                        </>
+                                      );
+                                    case "video":
+                                      return (
+                                        <>
+                                          File Video
+                                          <br />
+                                          Klik untuk melihat
+                                        </>
+                                      );
+                                    case "audio":
+                                      return (
+                                        <>
+                                          File Audio
+                                          <br />
+                                          Klik untuk mendengarkan
+                                        </>
+                                      );
+                                    case "excel":
+                                      return (
+                                        <>
+                                          File Excel
+                                          <br />
+                                          Klik untuk melihat
+                                        </>
+                                      );
+                                    default:
+                                      return (
+                                        <>
+                                          File Dokumen
+                                          <br />
+                                          Klik untuk download
+                                        </>
+                                      );
+                                  }
+                                };
+
+                                return (
+                                  <a
+                                    key={file.id}
+                                    href={`http://localhost:3000${file.url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="md:w-max w-full"
+                                  >
+                                    <div className="md:w-max w-full h-20 flex gap-3 border border-slate-600 p-3 box-content rounded-md">
+                                      <div className="flex gap-2 justify-center text-base items-center">
+                                        {fileType === "image" ? (
+                                          <img
+                                            src={`http://localhost:3000${file.url}`}
+                                            alt="file"
+                                            loading="lazy"
+                                            title={`file-${file.id}`}
+                                            className="w-20 h-20 object-cover"
+                                          />
+                                        ) : (
+                                          renderIcon()
+                                        )}
+                                        <span className="flex justify-center flex-col">
+                                          {renderText()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </a>
+                                );
+                              })}
+                            </div>
+                          ) : null}
+                        </>
                       ) : (
                         <Kuis
                           namaMateriKuis={subMateri.judul}
@@ -365,7 +633,7 @@ const Materi = () => {
                             idMateri: subMateri?.materiId,
                             idMatkul: idMatkul,
                             userId: user?.id,
-                            userRole: user?.role
+                            userRole: user?.role,
                           }}
                         />
                       )}
@@ -378,6 +646,8 @@ const Materi = () => {
         </div>
         <div
           className={`fixed right-0 h-full border border-slate-400 rounded-md overflow-y-auto pb-[90px] bg-white transition-all duration-300 ease-in-out ${
+            !loading ? (materi.length === 0 ? "hidden" : "block") : "hidden"
+          } ${
             ButtonMenuMateri
               ? "w-0 mt-[75.7px] border-none"
               : "w-full pl-[64px] sm:w-[50%] sm:pl-0 md:w-[40%] lg:w-[30%] mt-[75.7px]"
@@ -442,16 +712,23 @@ const Materi = () => {
                     <h1 className="font-medium text-slate-800">
                       {dataMateri.judul}
                     </h1>
-                    {dataMateri.jumlahSelesai ===
-                    dataMateri.subMateri.length ? (
-                      <FontAwesomeIcon
-                        className="text-green-600 text-xl"
-                        icon={faCircleCheckSolid}
-                      />
+                    {dataMateri.status === true ? (
+                      dataMateri.jumlahSelesai ===
+                      dataMateri.subMateri.length ? (
+                        <FontAwesomeIcon
+                          className="text-green-600 text-xl"
+                          icon={faCircleCheckSolid}
+                        />
+                      ) : (
+                        dataMateri.jumlahSelesai +
+                        "/" +
+                        dataMateri.subMateri.length
+                      )
                     ) : (
-                      dataMateri.jumlahSelesai +
-                      "/" +
-                      dataMateri.subMateri.length
+                      <FontAwesomeIcon
+                        className="text-slate-800 text-xl"
+                        icon={faLock}
+                      />
                     )}
                   </div>
                 </div>
@@ -490,7 +767,7 @@ const Materi = () => {
                               dataSubMateri.status,
                               dataMateri.id,
                               dataSubMateri.id,
-                              dataSubMateri.type
+                              dataMateri.status
                             )
                           }
                           key={dataSubMateri.id}
@@ -503,6 +780,74 @@ const Materi = () => {
                 </motion.div>
               </div>
             ))}
+            {user?.role === "Mahasiswa" ? (
+              <div className="w-[100%] p-2 rounded-lg m-auto relative">
+                <div
+                  className="cursor-pointer flex gap-4 items-center relative"
+                  onClick={() => setOpenMateriTambahan(!openMateriTambahan)}
+                >
+                  <FontAwesomeIcon
+                    className="text-slate-400"
+                    icon={openMateriTambahan ? faAngleUp : faAngleDown}
+                  />
+                  <div className="w-full flex justify-between items-center">
+                    <h1 className="font-medium text-slate-800">
+                      Penilaian Dosen dan Mata Kuliah
+                    </h1>
+                    {doneKuisioner ? (
+                      <FontAwesomeIcon
+                        className="text-green-600 text-xl"
+                        icon={faCircleCheckSolid}
+                      />
+                    ) : (
+                      <span> 0/1</span>
+                    )}
+                  </div>
+                </div>
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={
+                    openMateriTambahan
+                      ? { height: "auto", opacity: 1 }
+                      : { height: 0, opacity: 0 }
+                  }
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-[22.5px] ml-[6.8px] border-l-[1.2px] border-slate-400 pr-4 flex flex-col gap-1 py-2">
+                    <div className="flex items-center gap-3">
+                      {doneKuisioner ? (
+                        <FontAwesomeIcon
+                          className="text-green-600 text-xs"
+                          icon={faCircleCheckRegular}
+                        />
+                      ) : (
+                        <div className="w-3 h-3 rounded-full bg-slate-400"></div>
+                      )}
+                      {progressBar == 100.0 ? (
+                        <Link
+                          to={`/penilaian/dosen/matakuliah/${idMatkul}`}
+                          className="cursor-pointer font-normal"
+                        >
+                          Penilaian
+                        </Link>
+                      ) : (
+                        <div
+                          className="cursor-pointer font-normal"
+                          onClick={() =>
+                            Notify.failure(
+                              "Untuk melakukan penilaian selesaikan semua materi terlebih dahulu"
+                            )
+                          }
+                        >
+                          Penilaian
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

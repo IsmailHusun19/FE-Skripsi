@@ -183,6 +183,8 @@ const SoalKuis = () => {
       return navigate(`/materi/${idMatkul}/${idMateri}/${idSubMateri}`)
     }
   }
+
+  console.log(user.role)
   return (
     <>
       <div className="min-h-screen flex items-center flex-col m-auto w-[95%]">
@@ -272,7 +274,7 @@ const SoalKuis = () => {
                       type="button"
                       onClick={() => handleKirimjawabanKuis()}
                     >
-                      Selesaikan{" "}
+                      {user.role === "Mahasiswa" ? "Selesaikan" : "Kembali"}
                     </button>
                   </>
                 ) : (

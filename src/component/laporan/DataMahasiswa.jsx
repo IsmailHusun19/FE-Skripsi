@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import {
   getUserCheck,
-  getDataLaporanDataMahasiswa
 } from "../../config/FetchingData";
 import { useParams, useNavigate } from "react-router-dom";
 const DataMahasiswa = ({laporanDataProgressMahasiswa}) => {
@@ -21,7 +20,6 @@ const DataMahasiswa = ({laporanDataProgressMahasiswa}) => {
     getDataUser();
   }, [idMatkul]);
 
-  console.log(laporanDataProgressMahasiswa)
   return (
     <>
       <h1 className="justify-start w-full mb-3 text-3xl print:text-center print:my-5 print:text-2xl print:font-bold">Laporan</h1>

@@ -25,6 +25,7 @@ const SliderBar = ({
 }) => {
     const { idMatkul, idMateri, idSubMateri } = useParams();
     const [user, setUser] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const handleClick = () => {
       openChatBot(true);
@@ -35,11 +36,14 @@ const SliderBar = ({
     };
   
     const getData = async () => {
+      setLoading(true)
       try {
         const dataUser = await getUserCheck();
         setUser(dataUser.role);
       } catch (error) {
         console.log(error);
+      }finally{
+        setLoading(false)
       }
     };
 
@@ -72,12 +76,14 @@ const SliderBar = ({
       name: "Mahasiswa",
       isActive: false,
       icon: <FontAwesomeIcon className="text-xl w-9" icon={faUsers} />,
+      link: `/daftar/mahasiswa/matakuliah/${idMatkul}`
     },
     {
-      name: "Laporan",
+      name: `${user === 'Mahasiswa' ? 'Laporan' : 'Laporan Evaluasi'}`,
       isActive: false,
       icon: <TbReportAnalytics className="text-[30px] w-9" />,
-      link: `/laporan/${idMatkul}`,
+      link: `/laporan/${user === "Mahasiswa" ? "" : "evaluasi/dosen/matakuliah/"}${idMatkul}`,
+      
     },
     {
       name: "Hapus Mata Kuliah",
@@ -109,42 +115,43 @@ const SliderBar = ({
       >
         <span className="">{isSidebarCollapsed ? title.xs : title.sm}</span>
       </h6>
-      <ul>
-        {menuSlideBar.map((val, index) => {
-          const menuActive = val.isActive
-            ? `bg-blue-300 bg-opacity-10 px-3 border border-blue-100 py-2 rounded-md text-blue-400 flex items-center`
-            : `px-3 py-2 flex items-center ${
-                isSidebarCollapsed ? "justify-center" : ""
-              }`;
-          return (
-            ((user === "Dosen" &&
-              val.name !== "Keluar dari Mata Kuliah" &&
-              val.name !== "Laporan") ||
-              (user !== "Dosen" &&
-                val.name !== "Mahasiswa" &&
-                val.name !== "Mengelola Materi" &&
-                val.name !== "Hapus Mata Kuliah")) && (
-              <Link
-                key={index}
-                onClick={
-                  val.name === "ChatBot"
-                    ? () => handleClick()
-                    : val.name === "Hapus Mata Kuliah" || val.name === "Keluar dari Mata Kuliah"
-                    ? () => handleDeleteMatkul()
-                    : null
-                }
-                to={val.link}
-                className={`${menuActive} cursor-pointer hover:bg-blue-700 hover:text-white my-5 w-full`}
-              >
-                <div className="flex items-center justify-center">
-                  {val.icon}
-                </div>
-                {!isSidebarCollapsed && <div className="ml-2 overflow-hidden whitespace-nowrap">{val.name}</div>}
-              </Link>
-            )
-          );
-        })}
-      </ul>
+      {!loading ? (
+              <ul>
+              {menuSlideBar.map((val, index) => {
+                const menuActive = val.isActive
+                  ? `bg-blue-300 bg-opacity-10 px-3 border border-blue-100 py-2 rounded-md text-blue-400 flex items-center`
+                  : `px-3 py-2 flex items-center ${
+                      isSidebarCollapsed ? "justify-center" : ""
+                    }`;
+                return (
+                  ((user === "Dosen" &&
+                    val.name !== "Keluar dari Mata Kuliah") ||
+                    (user !== "Dosen" &&
+                      val.name !== "Mahasiswa" &&
+                      val.name !== "Mengelola Materi" &&
+                      val.name !== "Hapus Mata Kuliah")) && (
+                    <Link
+                      key={index}
+                      onClick={
+                        val.name === "ChatBot"
+                          ? () => handleClick()
+                          : val.name === "Hapus Mata Kuliah" || val.name === "Keluar dari Mata Kuliah"
+                          ? () => handleDeleteMatkul()
+                          : null
+                      }
+                      to={val.link}
+                      className={`${menuActive} cursor-pointer hover:bg-blue-700 hover:text-white my-5 w-full`}
+                    >
+                      <div className="flex items-center justify-center">
+                        {val.icon}
+                      </div>
+                      {!isSidebarCollapsed && <div className="ml-2 overflow-hidden whitespace-nowrap">{val.name}</div>}
+                    </Link>
+                  )
+                );
+              })}
+            </ul>
+      ) : null}
     </div>
   );
 };

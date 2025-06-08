@@ -5,7 +5,7 @@ import {
   cekStatusMulaiKuis,
 } from "../config/FetchingData";
 import { getDetaiNilaiMahasiswa } from "../config/FetchingData.jsx";
-import { useParams, Link, useNavigate, } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
 const Kuis = ({
   namaMateriKuis,
@@ -14,14 +14,13 @@ const Kuis = ({
   durasiUjian,
   durasiUlang,
   data,
-  userRole
 }) => {
-  const { idMatkul, idMateri, idSubMateri, idMengerjakanKuis } = useParams();
+  const { idSubMateri } = useParams();
   localStorage.removeItem("jawabanUser");
   const navigate = useNavigate();
   const [dataNilai, setDataNiai] = useState();
   const [waktuSelesai, setWaktuSelesai] = useState(null);
-  const [sisaWaktu, setSisaWaktu] = useState("");
+  const [sisaWaktu, setSisaWaktu] = useState("Loading");
 
   const getNiaiMahasiswa = async () => {
     try {
@@ -30,7 +29,7 @@ const Kuis = ({
       setWaktuSelesai(getDetailNilaiMhs.waktuMulai);
     } catch (error) {
       setWaktuSelesai(null);
-      setSisaWaktu("00:00")
+      setSisaWaktu("00:00");
       console.error(error);
     }
   };
@@ -39,45 +38,55 @@ const Kuis = ({
   }, [idSubMateri]);
 
   const handleMulaiKuis = async () => {
-    if (sisaWaktu === "00:00") {
-      try {
-        const cekStatusKuis = await cekStatusMulaiKuis(idSubMateri);
-        if (cekStatusKuis.statusOngoing) {
-          navigate(
-            `/kuis/${data.idMatkul}/${data.idMateri}/${data.idSubMateri}/${cekStatusKuis.id}`
-          );
-        } else {
-          const handleMulaiKuis = await mulaiKuis(data.idSubMateri);
-          if (handleMulaiKuis != undefined) {
+    if (data.userRole === "Mahasiswa") {
+      if (sisaWaktu === "00:00") {
+        try {
+          const cekStatusKuis = await cekStatusMulaiKuis(idSubMateri);
+          if (cekStatusKuis.statusOngoing) {
             navigate(
-              `/kuis/${data.idMatkul}/${data.idMateri}/${data.idSubMateri}/${handleMulaiKuis.kuis.id}`
+              `/kuis/${data.idMatkul}/${data.idMateri}/${data.idSubMateri}/${cekStatusKuis.id}`
             );
+          } else {
+            const handleMulaiKuis = await mulaiKuis(data.idSubMateri);
+            if (handleMulaiKuis != undefined) {
+              navigate(
+                `/kuis/${data.idMatkul}/${data.idMateri}/${data.idSubMateri}/${handleMulaiKuis.kuis.id}`
+              );
+            }
           }
+        } catch (error) {
+          console.log(error);
+          setWaktuSelesai("");
+        }
+      }
+    } else {
+      try {
+        const handleMulaiKuis = await mulaiKuis(data.idSubMateri);
+        console.log(handleMulaiKuis);
+        if (handleMulaiKuis != undefined) {
+          navigate(
+            `/kuis/${data.idMatkul}/${data.idMateri}/${data.idSubMateri}/${handleMulaiKuis.kuis.id}`
+          );
         }
       } catch (error) {
         console.log(error);
-        setWaktuSelesai("")
+        setWaktuSelesai("");
       }
     }
   };
-  
+
   useEffect(() => {
     if (!durasiUlang || !waktuSelesai) return;
-  
-    // Konversi waktuSelesai ke objek Date
     const waktuSelesaiDate = new Date(waktuSelesai);
-  
-    // Hitung kapan mahasiswa bisa memulai kuis lagi
-    const waktuBisaMulai = new Date(waktuSelesaiDate.getTime() + durasiUlang * 60000);
-  
-    // Jalankan interval untuk menghitung sisa waktu
+    const waktuBisaMulai = new Date(
+      waktuSelesaiDate.getTime() + durasiUlang * 60000
+    );
     const interval = setInterval(() => {
       const waktuSekarang = new Date();
-      const selisihWaktu = waktuBisaMulai - waktuSekarang + 2000; // Hitung selisih waktu
-  
+      const selisihWaktu = waktuBisaMulai - waktuSekarang + 2000;
       if (selisihWaktu <= 0) {
         clearInterval(interval);
-        setSisaWaktu("00:00"); // Jika waktu tunggu habis, bisa mulai kuis
+        setSisaWaktu("00:00");
       } else {
         const sisaMenit = Math.floor(selisihWaktu / 60000)
           .toString()
@@ -85,8 +94,6 @@ const Kuis = ({
         const sisaDetik = Math.floor((selisihWaktu % 60000) / 1000)
           .toString()
           .padStart(2, "0");
-  
-        // Jika waktu kurang dari 1 menit, tampilkan hanya detik
         if (selisihWaktu < 60000) {
           setSisaWaktu(`${sisaDetik}s`);
         } else {
@@ -94,10 +101,9 @@ const Kuis = ({
         }
       }
     }, 1000);
-  
+
     return () => clearInterval(interval);
   }, [durasiUlang, waktuSelesai]);
-  
 
   return (
     <div>
@@ -117,14 +123,16 @@ const Kuis = ({
               className="bg-slate-800 text-slate-200 px-6 py-2 hover:bg-slate-900 hover:text-slate-100"
               type="submit"
             >
-              {sisaWaktu === ""
-                ? "Loading..."
+              {data.userRole === "Dosen" ||
+              data.userRole === "Admin" ||
+              sisaWaktu === "00:00"
+                ? "Mulai"
                 : sisaWaktu !== "00:00"
                 ? sisaWaktu
                 : "Mulai"}
             </button>
           </div>
-          {dataNilai === undefined ? null : (
+          {dataNilai === undefined || dataNilai.nilai.length === 0 ? null : (
             <div className="mt-10 mb-10">
               <div
                 className="overflow-x-auto p-5"

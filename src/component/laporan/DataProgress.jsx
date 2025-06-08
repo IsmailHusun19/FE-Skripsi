@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { getDataLaporanMahasiswa } from "../../config/FetchingData";
-const DataProgress = ({ idMatkul }) => {
+const DataProgress = ({ idMatkul, idMahasiswa, role }) => {
   const [laporan, setLaporan] = useState([]);
   const [progress, setProgress] = useState(0);
   const [totalDurasi, setTotalDurasi] = useState("");
 
   const getDataLaporan = async () => {
     try {
-      const laporanMahasiswa = await getDataLaporanMahasiswa(idMatkul);
+      const laporanMahasiswa = await getDataLaporanMahasiswa(idMatkul, idMahasiswa, role);
       const groupedLaporan = laporanMahasiswa.laporan.reduce((acc, item) => {
         const materi = acc.find((m) => m.materi === item.materi);
 
@@ -259,7 +259,7 @@ const DataProgress = ({ idMatkul }) => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="border border-slate-400 p-2 text-center"
                     >
                       Tidak ada data
