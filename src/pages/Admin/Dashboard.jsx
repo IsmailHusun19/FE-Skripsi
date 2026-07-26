@@ -253,9 +253,9 @@ const Dashboard = () => {
                     value={tahun}
                     onChange={(e) => setTahun(e.target.value)}
                   >
-                    <option value="2023">2023</option>
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
+                    <option value="2023">2025</option>
+                    <option value="2024">2026</option>
+                    <option value="2025">2027</option>
                   </select>
                   <div className="w-24 h-9 flex justify-center items-center text-center">
                     <button
