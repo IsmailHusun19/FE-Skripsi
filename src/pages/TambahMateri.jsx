@@ -3,6 +3,9 @@ import Navbar from "../component/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import EditorConfig from "../component/EditorConfig";
+import {
+  getMataKuliah,
+} from "../config/FetchingData";
 import Footer from "../component/Footer";
 import {
   FaFilePdf,
@@ -18,6 +21,8 @@ import { Report } from "notiflix/build/notiflix-report-aio";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../utils/config";
+
 
 const TambahMateri = () => {
   const navigate = useNavigate();
@@ -57,12 +62,30 @@ const TambahMateri = () => {
   const [Datamateri, setDataMateri] = useState([]);
   const [selectedValue, setSelectedValue] = useState("");
   const [dataGambarSubMateri, setDataGambarSubMateri] = useState("");
+  const [dataMataKuliah, setDataMataKuliah] = useState([]);
+
+  const getDataMatkul = async () => {
+    setLoading(true);
+    try {
+      const getDataMataKuliah = await getMataKuliah(idMataKuliah);
+      setDataMataKuliah(getDataMataKuliah);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getDataMatkul();
+  }, [idMataKuliah]);
+
 
   const handleMateri = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:3000/materi/${idMataKuliah}`,
+        `${BASE_URL}/materi/${idMataKuliah}`,
         {
           withCredentials: true,
         }
@@ -80,7 +103,7 @@ const TambahMateri = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:3000/sub-materi/detail/${idSubMateri}`,
+        `${BASE_URL}/sub-materi/detail/${idSubMateri}`,
         { withCredentials: true }
       );
 
@@ -133,10 +156,6 @@ const TambahMateri = () => {
       handleSubMateri();
     }
   }, []);
-
-  useEffect(() => {
-    console.log("Updated subMateri:", subMateri);
-  }, [subMateri]);
 
   useEffect(() => {
     const selectedMateri = Object.values(Datamateri).find(
@@ -300,7 +319,7 @@ const TambahMateri = () => {
     );
 
     if (fileObj.isUploaded) {
-      fetch(`http://localhost:3000/sub-materi/deleteFile/${fileObj.id}`, {
+      fetch(`${BASE_URL}/sub-materi/deleteFile/${fileObj.id}`, {
         credentials: "include",
         method: "DELETE",
       })
@@ -435,24 +454,21 @@ const TambahMateri = () => {
       )
     );
     setIdSoal((prevIdSoal) => prevIdSoal.filter((id) => id !== qIndex));
-    console.log(subMateri);
 
-    fetch(`http://localhost:3000/sub-materi/deleteFile/${idGambar}`, {
+    fetch(`${BASE_URL}/sub-materi/deleteFile/${idGambar}`, {
       credentials: "include",
       method: "DELETE",
     })
       .then((res) => res.json())
       .then((data) => console.log("File deleted:", data))
       .catch((error) => console.error("Error deleting file:", error));
-
-    console.log("File dihapus dari soal:", questionId);
   };
 
   const sendSubMateri = async (formData) => {
     let metode = idSubMateri ? "put" : "post";
     let url = idSubMateri
-      ? `http://localhost:3000/sub-materi/${idSubMateri}`
-      : "http://localhost:3000/sub-materi";
+      ? `${BASE_URL}/sub-materi/${idSubMateri}`
+      : `${BASE_URL}/sub-materi`;
     url =
       subMateri[0].type === "kuis" ? `${url}?idSoal=${idSoal.join(",")}` : url;
     try {
@@ -490,7 +506,6 @@ const TambahMateri = () => {
       );
       return response.data;
     } catch (error) {
-      console.log(response.data);
       console.error(
         "Terjadi kesalahan saat mengirim sub-materi:",
         error.response?.data || error.message
@@ -539,11 +554,6 @@ const TambahMateri = () => {
         formData.append("pilihan", JSON.stringify(pilihanArray));
       }
     });
-    console.log("Isi FormData:");
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
     return sendSubMateri(formData);
   };
 
@@ -554,7 +564,6 @@ const TambahMateri = () => {
     };
 
     if (selectedValue !== "") {
-      console.log(subMateri[0].type);
       if (subMateri[0].type === "materi") {
         if (
           typeof subMateri[0].subMateri === "string" &&
@@ -564,10 +573,8 @@ const TambahMateri = () => {
             typeof removeHTMLTags(dataEditorView) === "string" &&
             removeHTMLTags(dataEditorView).trim() !== ""
           ) {
-            console.log(removeHTMLTags(subMateri[0].isiMateri));
             createSubMateri(subMateri);
           } else {
-            console.log(dataEditorView);
             validasi("Materi tidak boleh kosong");
           }
         } else {
@@ -629,6 +636,7 @@ const TambahMateri = () => {
     setDataGambarSubMateri(dataId);
   };
 
+
   return (
     <div className="container-satu">
       {!loading ? (
@@ -641,7 +649,7 @@ const TambahMateri = () => {
                 className="w-[95%] mt-10 pb-11 m-auto bg-white rounded-lg p-5 shadow-xl"
               >
                 <div className="flex justify-between">
-                  <h1 className="text-2xl font-bold">Pemrograman Web</h1>
+                  <h1 className="text-2xl font-bold">{dataMataKuliah.nama}</h1>
                 </div>
                 <div>
                   <form className="mt-10">
@@ -804,7 +812,7 @@ const TambahMateri = () => {
                                 <div className="flex items-center justify-between p-2 border rounded-md">
                                   <div className="flex items-center space-x-2">
                                     <img
-                                      src={"http://localhost:3000" + file.url}
+                                      src={`${BASE_URL}` + file.url}
                                       alt="Preview"
                                       className="w-16 h-16 object-cover rounded-md"
                                     />
@@ -812,7 +820,7 @@ const TambahMateri = () => {
                                       {file.name}
                                     </span>
                                     <a
-                                      href={"http://localhost:3000" + file.url}
+                                      href={`${BASE_URL}` + file.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="text-blue-500 hover:text-blue-700"
@@ -932,7 +940,7 @@ const TambahMateri = () => {
                                       </span>
                                       {fileObj.isUploaded ? (
                                         <a
-                                          href={`http://localhost:3000${fileObj.url}`}
+                                          href={`${BASE_URL}${fileObj.url}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-blue-500 hover:text-blue-700"

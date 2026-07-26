@@ -11,6 +11,8 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import UserCheck from "../UsersCheck";
 import { useState, useEffect } from "react";
+import { BASE_URL } from "../../utils/config";
+
 
 const MenuSlideBar = () => {
   const location = useLocation();
@@ -39,7 +41,7 @@ const MenuSlideBar = () => {
     try {
       // Kirimkan request logout ke backend
       const response = await axios.post(
-        "http://localhost:3000/logout",
+        `${BASE_URL}/logout`,
         {},
         {
           withCredentials: true,
@@ -95,7 +97,7 @@ const isPenggunaActive = currentPath.startsWith("/admin/pengguna") && !isFeedbac
         <SidebarItem
           icon={<Notebook size={20} />}
           text="Progress Mahasiswa"
-          active={currentPath.includes("/admin/progress-mahasiswa")}
+          active={currentPath.includes("/admin/progress/mahasiswa")}
           to="/admin/progress/mahasiswa"
         ></SidebarItem>
 

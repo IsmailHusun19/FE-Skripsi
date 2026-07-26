@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import UserCheck from "./UsersCheck";
 import axios from "axios";
 import { Loading } from "notiflix/build/notiflix-loading-aio";
+import { BASE_URL } from "../utils/config";
 const menuNavigasi = [
   { name: "Home", link: "/" },
   { name: "Mata Kuliah", link: "/matakuliah" },
@@ -85,7 +86,7 @@ const Navbar = ({newData}) => {
     try {
       // Kirimkan request logout ke backend
       const response = await axios.post(
-        "http://localhost:3000/logout",
+        `${BASE_URL}/logout`,
         {},
         {
           withCredentials: true,

@@ -5,6 +5,7 @@ import { Notify } from "notiflix/build/notiflix-notify-aio";
 import { Report } from "notiflix/build/notiflix-report-aio";
 import { useNavigate } from "react-router-dom";
 import { putMataKuliah } from "../config/FetchingData";
+import { BASE_URL } from "../utils/config";
 
 const AddMatkulDosen = ({
   handleButtonClick,
@@ -63,10 +64,10 @@ const AddMatkulDosen = ({
       if (Object.keys(handleEditMateri).length !== 0) {
         metode = "put";
         delete data.id;
-        setUrl = `http://localhost:3000/materi/${handleEditMateri.id}`;
+        setUrl = `${BASE_URL}/materi/${handleEditMateri.id}`;
       } else {
         metode = "post";
-        setUrl = "http://localhost:3000/materi";
+        setUrl = `${BASE_URL}/materi`;
       }
       const dataJudul = dataMateri.some(
         (items) => items.judul.toLowerCase() === name.toLowerCase()
@@ -131,7 +132,7 @@ const AddMatkulDosen = ({
                       name="materi"
                       id="materi"
                       className="bg-slate-100 border border-gray-300 font-medium text-gray-900 text-sm rounded-lg block w-full p-2.5"
-                      placeholder="Tulis nama mata kuliah"
+                      placeholder="Tulis nama materi"
                       required
                       value={name}
                       onChange={handleName}

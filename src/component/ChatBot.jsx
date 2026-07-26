@@ -15,6 +15,7 @@ import Typewriter from "typewriter-effect";
 import {
   getUserCheck,
 } from "../config/FetchingData";
+import { BASE_URL } from "../utils/config";
 
 const ChatBot = ({ closeBot, openBot }) => {
 
@@ -65,7 +66,7 @@ const ChatBot = ({ closeBot, openBot }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/chat",
+        `${BASE_URL}/chat`,
         { message: input },
         { withCredentials: true }
       );

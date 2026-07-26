@@ -13,6 +13,7 @@ import { faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { Loading } from "notiflix/build/notiflix-loading-aio";
 import { useParams, Link, useNavigate, Navigate } from "react-router-dom";
+import { BASE_URL } from "../utils/config";
 
 const SoalKuis = () => {
   const navigate = useNavigate();
@@ -216,7 +217,7 @@ const SoalKuis = () => {
                 <div className={`w-full ${soal?.fileMateri?.find((item) => item.idSoal == nomorSoal) ? 'min-h-56' : 'h-max'} max-h-max flex flex-col md:block`}>
                   {soal?.fileMateri?.find((item) => item.idSoal == nomorSoal)? (<><img
                     className="float-left mr-5 h-80 w-80 md:h-56 md:w-56"
-                    src={"http://localhost:3000" + soal?.fileMateri?.find((item) => item.idSoal == nomorSoal).url}
+                    src={BASE_URL + soal?.fileMateri?.find((item) => item.idSoal == nomorSoal).url}
                     alt=""
                   /></>) : (null)}
                   <p>

@@ -40,6 +40,7 @@ import {
   FaFileExcel,
   FaFileAlt,
 } from "react-icons/fa";
+import { BASE_URL } from "../../utils/config";
 
 const DetailMataKuliah = () => {
   const [user, setUser] = useState([]);
@@ -285,7 +286,7 @@ const DetailMataKuliah = () => {
         if (status === "belum_selesai") {
           try {
             const response = await axios.post(
-              `http://localhost:3000/sub-materi/selesai/${idSubMateri}`,
+              `${BASE_URL}/sub-materi/selesai/${idSubMateri}`,
               {},
               {
                 withCredentials: true,
@@ -597,7 +598,7 @@ const DetailMataKuliah = () => {
                                         return (
                                           <a
                                             key={file.id}
-                                            href={`http://localhost:3000${file.url}`}
+                                            href={`${BASE_URL}${file.url}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="md:w-max w-full"
@@ -606,7 +607,7 @@ const DetailMataKuliah = () => {
                                               <div className="flex gap-2 justify-center text-base items-center">
                                                 {fileType === "image" ? (
                                                   <img
-                                                    src={`http://localhost:3000${file.url}`}
+                                                    src={`${BASE_URL}${file.url}`}
                                                     alt="file"
                                                     loading="lazy"
                                                     title={`file-${file.id}`}

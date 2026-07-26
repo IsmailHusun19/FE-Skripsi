@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../utils/config";
 
 const UserCheck = ({ setData }) => {
   const navigate = useNavigate()
@@ -8,13 +9,13 @@ const UserCheck = ({ setData }) => {
 
   const fetchProtectedData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/", {
+      const response = await axios.get(`${BASE_URL}/`, {
         withCredentials: true,
       });
 
       // Fetching user details
       const responseId = await axios.get(
-        `http://localhost:3000/users/${response.data.userInfo.id}`,
+        `${BASE_URL}/users/${response.data.userInfo.id}`,
         {
           withCredentials: true,
         }

@@ -94,7 +94,8 @@ const Footer = () => {
           <aside className="w-[90%] sm:w[95%] text-center m-auto">
             <p>
               Copyright © {new Date().getFullYear()} - Universitas Banten Jaya.
-              Semua Hak Cipta Dilindungi.
+              Semua Hak Cipta Dilindungi. <br />
+              <span className="opacity-80">By Ismail Husun</span>
             </p>
           </aside>
         </div>

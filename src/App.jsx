@@ -40,6 +40,9 @@ import TambahDataDosen from "./pages/Admin/TambahDataDosen";
 import LupaPassword from "./pages/LupaPassword";
 import CodeLupaPassword from "./pages/CodeLupaPassword";
 import RisetPassword from "./pages/RisetPassword";
+import Tugas from "./pages/Tugas";
+import MengelolaTugas from "./pages/MengelolaTugas";
+import DetailTugas from "./pages/DetailTugas";
 
 function App() {
   return (
@@ -50,7 +53,10 @@ function App() {
           <Route path="/" element={<RedirectByRole />} />
           <Route path="/login" element={<Login />} />
           <Route path="/lupa-password" element={<LupaPassword />} />
-          <Route path="/lupa-password-code/:id" element={<CodeLupaPassword />} />
+          <Route
+            path="/lupa-password-code/:id"
+            element={<CodeLupaPassword />}
+          />
           <Route path="/riset-password-code/:id" element={<RisetPassword />} />
 
           <Route path="/signup" element={<Signup />} />
@@ -235,6 +241,36 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["Mahasiswa", "Dosen"]}>
                 <Matkul />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tugas/:idMatkul"
+            element={
+              <ProtectedRoute allowedRoles={["Mahasiswa", "Dosen"]}>
+                <SidebarContextProvider>
+                  <Tugas />
+                </SidebarContextProvider>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mengelolaTugas/:idMatkul/:idTugas?"
+            element={
+              <ProtectedRoute allowedRoles={["Mahasiswa", "Dosen"]}>
+                <SidebarContextProvider>
+                  <MengelolaTugas />
+                </SidebarContextProvider>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/detail-tugas/:idMatkul/:idTugas"
+            element={
+              <ProtectedRoute allowedRoles={["Mahasiswa", "Dosen"]}>
+                <SidebarContextProvider>
+                  <DetailTugas />
+                </SidebarContextProvider>
               </ProtectedRoute>
             }
           />

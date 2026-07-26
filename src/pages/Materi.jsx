@@ -42,6 +42,7 @@ import {
   FaFileExcel,
   FaFileAlt,
 } from "react-icons/fa";
+import { BASE_URL } from "../utils/config";
 
 const Materi = () => {
   const [user, setUser] = useState([]);
@@ -84,13 +85,13 @@ const Materi = () => {
         idMatkul,
         dataUser.id
       );
-      console.log(dataProgress);
+      console.log(dataProgress.progress.id);
       const dataDetailSubMateri = await getDataDetailSubMateri(
         IdSubMateri || idSubMateri || dataProgress.progress.id
       );
 
       const handleNavigate = () => {
-        if (dataProgress.materi) {
+        if (dataProgress.progress.id) {
           navigate(
             `/materi/${idMatkul}/${dataProgress.progress.materiId}/${dataProgress.progress.id}`
           );
@@ -276,7 +277,7 @@ const Materi = () => {
         if (status === "belum_selesai") {
           try {
             const response = await axios.post(
-              `http://localhost:3000/sub-materi/selesai/${idSubMateri}`,
+              `${BASE_URL}/sub-materi/selesai/${idSubMateri}`,
               {},
               {
                 withCredentials: true,
@@ -469,7 +470,7 @@ const Materi = () => {
                 <FontAwesomeIcon className="text-2xl" icon={faBars} />
               </button>
             </div>
-            <div className="border-b text-sm">
+            <div className="border-b text-sm overflow-y-auto max-h-[calc(100vh-132px)]">
               <SliderBar
                 title={{ sm: "APPLICATION", xs: "APP" }}
                 isSidebarCollapsed={isSidebarCollapsed}
@@ -592,7 +593,7 @@ const Materi = () => {
                                 return (
                                   <a
                                     key={file.id}
-                                    href={`http://localhost:3000${file.url}`}
+                                    href={`${BASE_URL}${file.url}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="md:w-max w-full"
@@ -601,7 +602,7 @@ const Materi = () => {
                                       <div className="flex gap-2 justify-center text-base items-center">
                                         {fileType === "image" ? (
                                           <img
-                                            src={`http://localhost:3000${file.url}`}
+                                            src={`${BASE_URL}${file.url}`}
                                             alt="file"
                                             loading="lazy"
                                             title={`file-${file.id}`}

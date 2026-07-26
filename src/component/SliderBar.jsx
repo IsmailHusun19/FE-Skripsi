@@ -8,11 +8,13 @@ import {
   faRobot,
   faRightFromBracket,
   faGears,
+  faBookOpenReader,
   faCircleCheck as faCircleCheckSolid,
 } from "@fortawesome/free-solid-svg-icons";
 import { useParams, Link, useNavigate} from "react-router-dom";
 import {
   getUserCheck,
+  getCekJumlahTugasBelumSelesai,
 } from "../config/FetchingData";
 import { motion } from "framer-motion";
 import { TbReportAnalytics } from "react-icons/tb";
@@ -26,6 +28,7 @@ const SliderBar = ({
     const { idMatkul, idMateri, idSubMateri } = useParams();
     const [user, setUser] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [jumlahTugasBelumSelesai, setJumlahTugasBelumSeleai] = useState([]);
 
     const handleClick = () => {
       openChatBot(true);
@@ -39,6 +42,10 @@ const SliderBar = ({
       setLoading(true)
       try {
         const dataUser = await getUserCheck();
+        if(dataUser.role !== "Dosen"){
+          const tugas = await getCekJumlahTugasBelumSelesai(idMatkul);
+          setJumlahTugasBelumSeleai(tugas.data.jumlahTugasBelum)
+        }
         setUser(dataUser.role);
       } catch (error) {
         console.log(error);
@@ -84,6 +91,12 @@ const SliderBar = ({
       icon: <TbReportAnalytics className="text-[30px] w-9" />,
       link: `/laporan/${user === "Mahasiswa" ? "" : "evaluasi/dosen/matakuliah/"}${idMatkul}`,
       
+    },
+    {
+      name: "Tugas",
+      isActive: false,
+      icon: <FontAwesomeIcon className="text-xl w-9" icon={faBookOpenReader} />,
+      link: `/tugas/${idMatkul}`,
     },
     {
       name: "Hapus Mata Kuliah",
@@ -142,8 +155,8 @@ const SliderBar = ({
                       to={val.link}
                       className={`${menuActive} cursor-pointer hover:bg-blue-700 hover:text-white my-5 w-full`}
                     >
-                      <div className="flex items-center justify-center">
-                        {val.icon}
+                      <div className="flex items-center justify-center relative">
+                        {val.icon}{val.name === "Tugas" && user !== "Dosen" ? jumlahTugasBelumSelesai == 0 ? null : <div className="h-5 w-5 bg-orange-500 text-center rounded-full absolute top-[-7px] left-5 font-bold">{jumlahTugasBelumSelesai}</div> : ""}
                       </div>
                       {!isSidebarCollapsed && <div className="ml-2 overflow-hidden whitespace-nowrap">{val.name}</div>}
                     </Link>

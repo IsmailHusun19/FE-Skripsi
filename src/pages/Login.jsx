@@ -6,7 +6,7 @@ import LogoLogin from "../assets/LogoLogin.svg";
 import Notiflix from 'notiflix';
 import { Report } from 'notiflix/build/notiflix-report-aio';
 import { Loading } from "notiflix/build/notiflix-loading-aio";
-  
+import { BASE_URL } from "../utils/config";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/login", getDataAkun, {
+      const response = await axios.post(`${BASE_URL}/login`, getDataAkun, {
         withCredentials: true 
       });
       if(response.data.role === "Admin"){

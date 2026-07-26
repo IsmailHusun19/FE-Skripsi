@@ -31,6 +31,7 @@ import { useParams } from "react-router-dom";
 import { Confirm } from "notiflix/build/notiflix-confirm-aio";
 import SliderBar from "../component/SliderBar";
 import ChatBot from "../component/ChatBot";
+import { BASE_URL } from "../utils/config";
 
 const MengelolaMateri = () => {
   const { idMatkul } = useParams();
@@ -77,7 +78,7 @@ const MengelolaMateri = () => {
   const getMataKuliah = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/mata-kuliah/${idMatkul}`,
+        `${BASE_URL}/mata-kuliah/${idMatkul}`,
         {
           withCredentials: true,
         }
@@ -167,7 +168,7 @@ const MengelolaMateri = () => {
         "No",
         async () => {
           const response = await axios.delete(
-            `http://localhost:3000/materi/${id}`,
+            `${BASE_URL}/materi/${id}`,
             {
               withCredentials: true,
             }
@@ -213,7 +214,7 @@ const MengelolaMateri = () => {
         "No",
         async () => {
           const response = await axios.delete(
-            `http://localhost:3000/sub-materi/${idMatkul}/${idMateri}/${idSubMateri}`,
+            `${BASE_URL}/sub-materi/${idMatkul}/${idMateri}/${idSubMateri}`,
             {
               withCredentials: true,
             }

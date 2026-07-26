@@ -262,7 +262,7 @@ const Dashboard = () => {
                       onClick={handleExport}
                       className="bg-blue-600 w-full h-full text-white rounded text-sm hover:bg-blue-700"
                     >
-                      Export JPG
+                      Export PDF
                     </button>
                   </div>
                 </div>

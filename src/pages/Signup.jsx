@@ -5,6 +5,7 @@ import LogoSignup from "../assets/LogoDaftar.svg";
 import axios from 'axios';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { Report } from 'notiflix/build/notiflix-report-aio';
+import { BASE_URL } from "../utils/config";
 
 
 const Signup = () => {
@@ -34,7 +35,7 @@ const Signup = () => {
     e.preventDefault(); // Mencegah reload halaman
   
     try {
-      const response = await axios.post('http://localhost:3000/register', {
+      const response = await axios.post(`${BASE_URL}/register`, {
         nomorinduk: getDataAkun.npm,  
         nama: getDataAkun.name,
         email: getDataAkun.email,

@@ -5,6 +5,8 @@ import { Notify } from "notiflix/build/notiflix-notify-aio";
 import { Report } from "notiflix/build/notiflix-report-aio";
 import { Confirm } from "notiflix/build/notiflix-confirm-aio";
 import { getAllMataKuliah, postDuplikatMataKuliah } from "../config/FetchingData";
+import { BASE_URL } from "../utils/config";
+
 
 const AddMatkulDosen = ({
   handleButtonClick,
@@ -26,7 +28,7 @@ const AddMatkulDosen = ({
     e.preventDefault();
     const buatMataKuliah = async () => {
       const response = await axios.post(
-        "http://localhost:3000/mata-kuliah",
+        `${BASE_URL}/mata-kuliah`,
         {
           nama: name,
         },
@@ -62,8 +64,10 @@ const AddMatkulDosen = ({
             resetForm();
           },
           () => {
-            buatMataKuliah();
+            handleButtonClick();
+            resetForm();
           }
+          
         );
       } else {
         buatMataKuliah();
@@ -81,7 +85,7 @@ const AddMatkulDosen = ({
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3000/mata-kuliah/join",
+        `${BASE_URL}/mata-kuliah/join`,
         {
           kodeGabung: name,
         },
@@ -91,7 +95,7 @@ const AddMatkulDosen = ({
       );
       await updateDataMatkul();
       handleButtonClick();
-      Notify.success("Berhasil menambah mata kuliah");
+      Notify.success("Berhasil join mata kuliah");
     } catch (error) {
       Report.failure("Code gabung mata kuliah salah!", "", "Okay", {
         backOverlay: false,
@@ -113,7 +117,7 @@ const AddMatkulDosen = ({
             className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full mb-14  sm:my-8 sm:w-full sm:max-w-lg "
           >
             <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-              <h1 className="font-semibold mb-4">Buat Mata Kuliah</h1>
+              <h1 className="font-semibold mb-4">{handleDataUsersCheck.role === "Mahasiswa" ? "Join Mata Kuliah" : "Buat Mata Kuliah"}</h1>
               {handleDataUsersCheck.role === "Mahasiswa" ? (
                 <form className="flex gap-3 items-center w-full" method="POST">
                   <div className="flex gap-4 w-[100%]">

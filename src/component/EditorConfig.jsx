@@ -3,6 +3,7 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "../style/CKEditor.css";
 import 'ckeditor5/ckeditor5.css';
 import TambahMateri from "../pages/TambahMateri";
+import { BASE_URL } from "../utils/config";
 
 import {
   ClassicEditor,
@@ -114,7 +115,7 @@ export default function EditorConfig({setDataEditorView, dataEditor, dataIdSubMa
     if (dataIdSubMateri !== "") {
       // Jika subMateriId sudah ada, update semua gambar dalam array
       uploadedImages.forEach((imageId) => {
-        fetch(`http://localhost:3000/gambar-materi/${imageId}`, {
+        fetch(`${BASE_URL}/gambar-materi/${imageId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ subMateriId: dataIdSubMateri}),
@@ -133,7 +134,6 @@ export default function EditorConfig({setDataEditorView, dataEditor, dataIdSubMa
       setUploadedImages([]);
     }
   }, [dataIdSubMateri]);
-  console.log(dataIdSubMateri)
 
   class MyUploadAdapter {
     constructor(loader) {
@@ -146,7 +146,7 @@ export default function EditorConfig({setDataEditorView, dataEditor, dataIdSubMa
           const data = new FormData();
           data.append("upload", file);
 
-          fetch("http://localhost:3000/gambar-materi", {
+          fetch(`${BASE_URL}/gambar-materi`, {
             method: "POST",
             body: data,
             credentials: "include",
@@ -487,7 +487,7 @@ export default function EditorConfig({setDataEditorView, dataEditor, dataIdSubMa
   
     // Kirim permintaan untuk menghapus gambar di backend jika ada yang dihapus
     deletedImages.forEach(url => {
-      fetch("http://localhost:3000/gambar-materi", {
+      fetch(`${BASE_URL}/gambar-materi`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

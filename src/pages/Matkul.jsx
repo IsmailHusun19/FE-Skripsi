@@ -16,6 +16,7 @@ import {
   faFaceSadTear,
 } from "@fortawesome/free-solid-svg-icons";
 import { Loading } from "notiflix/build/notiflix-loading-aio";
+import { BASE_URL } from "../utils/config";
 
 const Matkul = () => {
   const [showAddMatkulDosen, setShowAddMatkulDosen] = useState(false);
@@ -27,7 +28,7 @@ const Matkul = () => {
 
   const getData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/matakuliah", {
+      const response = await axios.get(`${BASE_URL}/matakuliah`, {
         withCredentials: true,
       });
       console.log(response);

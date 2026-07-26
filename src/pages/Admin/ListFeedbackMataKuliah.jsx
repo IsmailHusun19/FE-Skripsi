@@ -31,6 +31,8 @@ const ListFeedbackSistem = () => {
   const [cekDataKuisioner, setCekDataKuisioner] = useState(false);
   const [dataKuisionerNew, setDataKuisionerNew] = useState([]);
   const [filterWaktu, setFilterWaktu] = useState("all");
+  const [tanggalAwal, setTanggalAwal] = useState("");
+  const [tanggalAkhir, setTanggalAkhir] = useState("");
 
   const skorMapping = {
     "Sangat Baik": 5,
@@ -161,23 +163,17 @@ const ListFeedbackSistem = () => {
     }
   }, [loading]);
 
-  const filterDataByTime = (data, filter) => {
-    const now = new Date();
+  const filterDataByTime = (data) => {
+    if (!tanggalAwal && !tanggalAkhir) return data;
+
+    const start = tanggalAwal ? new Date(tanggalAwal) : null;
+    const end = tanggalAkhir ? new Date(tanggalAkhir) : null;
 
     return data.filter((item) => {
       const itemDate = new Date(item.tanggal);
-
-      if (filter === "6bulan") {
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(now.getMonth() - 6);
-        return itemDate >= sixMonthsAgo;
-      } else if (filter === "1tahun") {
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(now.getFullYear() - 1);
-        return itemDate >= oneYearAgo;
-      } else {
-        return true;
-      }
+      if (start && itemDate < start) return false;
+      if (end && itemDate > end) return false;
+      return true;
     });
   };
 
@@ -272,43 +268,72 @@ const ListFeedbackSistem = () => {
                               className="overflow-x-auto transition-all duration-300 ease-in-out
                     mx-3 lg:mx-0"
                             >
-                              <div className="mb-4 space-x-2">
-                                <button
-                                  onClick={() => setFilterWaktu("all")}
-                                  className="bg-blue-500 text-white px-3 py-1 rounded"
-                                >
-                                  Semua
-                                </button>
-                                <button
-                                  onClick={() => setFilterWaktu("6bulan")}
-                                  className="bg-green-500 text-white px-3 py-1 rounded"
-                                >
-                                  6 Bulan Terakhir
-                                </button>
-                                <button
-                                  onClick={() => setFilterWaktu("1tahun")}
-                                  className="bg-purple-500 text-white px-3 py-1 rounded"
-                                >
-                                  1 Tahun Terakhir
-                                </button>
+                              <div   className={`mb-4 flex flex-wrap items-end gap-4 p-4 rounded-md shadow-sm ${
+    !tanggalAwal ? "print:hidden" : ""
+  }`}>
+                                <div className="flex flex-col">
+                                  <label
+                                    htmlFor="tanggalAwal"
+                                    className="text-sm font-medium text-slate-700 mb-1"
+                                  >
+                                    Dari Tanggal
+                                  </label>
+                                  <input
+                                    id="tanggalAwal"
+                                    type="date"
+                                    value={tanggalAwal}
+                                    onChange={(e) =>
+                                      setTanggalAwal(e.target.value)
+                                    }
+                                    className="border border-slate-300 px-3 py-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none"
+                                  />
+                                </div>
+                                <div className="flex flex-col">
+                                  <label
+                                    htmlFor="tanggalAkhir"
+                                    className="text-sm font-medium text-slate-700 mb-1"
+                                  >
+                                    Sampai Tanggal
+                                  </label>
+                                  <input
+                                    id="tanggalAkhir"
+                                    type="date"
+                                    value={tanggalAkhir}
+                                    onChange={(e) =>
+                                      setTanggalAkhir(e.target.value)
+                                    }
+                                    className="border border-slate-300 px-3 py-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none"
+                                  />
+                                </div>
+                                <div className="mt-1 print:hidden">
+                                  <button
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md shadow-md transition-colors"
+                                    onClick={() => {
+                                      setTanggalAwal("");
+                                      setTanggalAkhir("");
+                                    }}
+                                  >
+                                    Reset Filter
+                                  </button>
+                                </div>
                               </div>
 
                               <table className="w-full rounded-lg print:text-sm">
                                 <thead>
                                   <tr className="bg-slate-800 text-slate-200">
-                                    <th className="border border-slate-400 p-2 w-[50px] max-w-max-[50px] text-center print:w-[50px] print:min-w-[50px]">
+                                    <th className="border border-slate-400 p-2 w-[50px] max-w-max-[50px] text-center print:w-[40px] print:min-w-[40px]">
                                       NO
                                     </th>
-                                    <th className="border border-slate-400 p-2 w-[80px] min-w-[80px] lebarTable100">
+                                    <th className="border border-slate-400 p-2 w-[80px] min-w-[80px] print:w-[50px] print:min-w-[50px]">
                                       Skor
                                     </th>
-                                    <th className="border border-slate-400 p-2 w-[150px] min-w-[150px] lebarTable100">
+                                    <th className="border border-slate-400 p-2 w-[150px] min-w-[150px] print:w-[100px] print:min-w-[100px]">
                                       Skor Rata Rata
                                     </th>
-                                    <th className="border border-slate-400 p-2 w-[150px] min-w-[150px] print:max-w-[120px] print:min-w-[120px]">
+                                    <th className="border border-slate-400 p-2 w-[150px] min-w-[150px] print:max-w-[100px] print:min-w-[100px]">
                                       Interpretasi
                                     </th>
-                                    <th className="border border-slate-400 p-2 w-[350px] min-w-[350px] lebarTable70">
+                                    <th className="border border-slate-400 p-2 w-[350px] min-w-[350px] print:min-w-[200px]">
                                       Saran
                                     </th>
                                     <th className="border border-slate-400 p-2 w-[230px] min-w-[230px] lebarTable150">
